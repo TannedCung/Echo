@@ -1,5 +1,6 @@
 import { env } from "@/lib/env";
 import { elevenlabsProvider } from "./elevenlabs";
+import { openaiProvider } from "./openai";
 import type { TtsProvider } from "./types";
 
 const providers = new Map<string, TtsProvider>();
@@ -9,6 +10,7 @@ export function registerTtsProvider(provider: TtsProvider) {
 }
 
 registerTtsProvider(elevenlabsProvider);
+registerTtsProvider(openaiProvider);
 
 /** Resolve a TTS provider by name, defaulting to ECHO_TTS_PROVIDER. */
 export function getTtsProvider(name: string = env.ECHO_TTS_PROVIDER): TtsProvider {
