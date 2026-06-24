@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { EchoMascot } from "@/components/mascot/echo-mascot";
 import { isDbConfigured } from "@/lib/db/client";
 import { getUserById } from "@/lib/db/queries/users";
@@ -69,13 +70,7 @@ export default async function OnboardingPage({
             <label htmlFor="testDate" className="text-sm font-semibold">
               Test date <span className="text-muted-foreground font-normal">(optional)</span>
             </label>
-            <input
-              id="testDate"
-              name="testDate"
-              type="date"
-              min={today}
-              className="border-input bg-card focus-visible:ring-ring focus-visible:ring-offset-background h-11 rounded-xl border px-4 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-            />
+            <Input id="testDate" name="testDate" type="date" min={today} />
             <CardDescription>Know when you sit the exam? We&apos;ll help you pace.</CardDescription>
           </div>
 

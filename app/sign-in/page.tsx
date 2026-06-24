@@ -3,6 +3,7 @@
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 
+import { EchoLogo } from "@/components/brand/echo-logo";
 import { EchoMascot } from "@/components/mascot/echo-mascot";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -12,8 +13,8 @@ export default function SignInPage() {
     <main className="flex flex-1 items-center justify-center px-6 py-16">
       <Card className="flex w-full max-w-sm flex-col items-center p-8 text-center">
         <EchoMascot state="idle" size="md" />
-        <Link href="/" className="mt-4 text-2xl font-extrabold tracking-tight">
-          <span className="text-primary">Echo</span>
+        <Link href="/" aria-label="Echo — home" className="mt-4">
+          <EchoLogo size={28} />
         </Link>
         <p className="text-muted-foreground mt-1 text-sm">Hear it. Say it. Own it.</p>
 

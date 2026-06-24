@@ -1,6 +1,8 @@
 import Link from "next/link";
 
+import { EchoLogo } from "@/components/brand/echo-logo";
 import { SignOutButton } from "@/components/shared/sign-out-button";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 interface TopNavProps {
   name?: string | null;
@@ -19,8 +21,8 @@ export function TopNav({ name, isGuest }: TopNavProps) {
   return (
     <header className="border-border bg-background/80 sticky top-0 z-20 border-b backdrop-blur">
       <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-4 px-6">
-        <Link href="/dashboard" className="text-xl font-extrabold tracking-tight">
-          <span className="text-primary">Echo</span>
+        <Link href="/dashboard" aria-label="Echo — dashboard">
+          <EchoLogo size={26} />
         </Link>
 
         <nav className="hidden items-center gap-1 sm:flex">
@@ -36,6 +38,7 @@ export function TopNav({ name, isGuest }: TopNavProps) {
         </nav>
 
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           <span className="text-muted-foreground hidden text-sm sm:inline">
             {displayName}
             {isGuest ? " · guest" : ""}
