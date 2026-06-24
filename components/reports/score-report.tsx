@@ -1,8 +1,12 @@
 import { Quote, Sparkles, TrendingUp } from "lucide-react";
 
-import { Card, CardDescription, CardTitle } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import type { ScoringResult } from "@/lib/ai/scoring-schema";
-import { CRITERIA_INFO, SPEAKING_CRITERIA } from "@/lib/ielts/band-descriptors";
+import {
+  CRITERIA_INFO,
+  SPEAKING_CRITERIA,
+  type SpeakingCriterion,
+} from "@/lib/ielts/band-descriptors";
 import { cn } from "@/lib/utils";
 
 interface ScoreReportProps {
@@ -11,64 +15,85 @@ interface ScoreReportProps {
   className?: string;
 }
 
-/** Band → friendly tone band, used to colour the score chips and bars. */
-function bandTone(band: number): string {
-  if (band >= 7) return "text-emerald-600 dark:text-emerald-400";
-  if (band >= 5.5) return "text-amber-600 dark:text-amber-400";
-  return "text-rose-600 dark:text-rose-400";
-}
-
-function BandBar({ band }: { band: number }) {
-  return (
-    <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full" aria-hidden>
-      <div
-        className={cn(
-          "h-full rounded-full",
-          band >= 7 ? "bg-emerald-500" : band >= 5.5 ? "bg-amber-500" : "bg-rose-500",
-        )}
-        style={{ width: `${(band / 9) * 100}%` }}
-      />
-    </div>
-  );
-}
+/**
+ * Each criterion gets its own steady brand hue (not a pass/fail colour) — the
+ * meters read as calm, growth-framed, never red-for-bad. Matches the design
+ * system's BandScore specimen.
+ */
+const CRITERION_HUE: Record<SpeakingCriterion, { text: string; bar: string }> = {
+  fluencyCoherence: { text: "text-teal", bar: "bg-teal" },
+  lexicalResource: { text: "text-rose", bar: "bg-rose" },
+  grammaticalRange: { text: "text-sage", bar: "bg-sage" },
+  pronunciation: { text: "text-warning", bar: "bg-warning" },
+};
 
 /**
- * Renders an IELTS Speaking band report: overall band, per-criterion scores
- * with evidence quotes, actionable upgrades, and (optionally) the annotated
- * transcript. Pure presentational server component — fed by either the live
- * scoring response or a persisted session row.
+ * Echo's IELTS band report — the moment the product builds toward. A prominent
+ * overall band dial beside the four official criteria as calm meters, then
+ * evidence quotes, growth-framed upgrades, and the annotated transcript with
+ * private listen-back. Pure presentational server component.
  */
 export function ScoreReport({ scoring, transcript, className }: ScoreReportProps) {
   return (
     <div className={cn("flex w-full max-w-2xl flex-col gap-6", className)}>
-      <Card className="from-primary/10 to-accent/5 flex flex-col items-center gap-2 bg-gradient-to-br text-center">
-        <span className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-          Overall band
-        </span>
-        <span
-          className={cn("text-6xl font-extrabold tabular-nums", bandTone(scoring.overall))}
-          aria-label={`Overall band ${scoring.overall}`}
-        >
-          {scoring.overall.toFixed(1)}
-        </span>
-        <CardDescription className="max-w-md text-balance">{scoring.summary}</CardDescription>
+      <Card className="flex flex-col items-center gap-8 rounded-3xl shadow-md sm:flex-row sm:items-stretch">
+        {/* Overall band dial */}
+        <div className="flex min-w-[168px] flex-col items-center justify-center gap-2">
+          <div
+            className="bg-primary text-primary-foreground flex size-32 flex-col items-center justify-center rounded-full shadow-[var(--glow-primary)]"
+            aria-label={`Overall band ${scoring.overall}`}
+          >
+            <span className="text-[11px] font-semibold tracking-wide uppercase opacity-85">
+              Overall
+            </span>
+            <span className="text-5xl leading-none font-extrabold tracking-tight tabular-nums">
+              {scoring.overall.toFixed(1)}
+            </span>
+            <span className="text-[11px] font-semibold opacity-85">band</span>
+          </div>
+          <span className="text-muted-foreground text-xs">estimated</span>
+        </div>
+
+        {/* Criteria meters */}
+        <div className="flex flex-1 flex-col justify-center gap-5">
+          <p className="text-sm leading-relaxed text-balance">{scoring.summary}</p>
+          {SPEAKING_CRITERIA.map((key) => {
+            const info = CRITERIA_INFO[key];
+            const result = scoring[key];
+            const hue = CRITERION_HUE[key];
+            return (
+              <div key={key} className="flex flex-col gap-1.5">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-sm font-semibold">{info.label}</span>
+                  <span className={cn("text-sm font-bold tabular-nums", hue.text)}>
+                    {result.band.toFixed(1)}
+                  </span>
+                </div>
+                <div className="bg-muted h-2 overflow-hidden rounded-full" aria-hidden>
+                  <div
+                    className={cn("h-full rounded-full", hue.bar)}
+                    style={{ width: `${(result.band / 9) * 100}%` }}
+                  />
+                </div>
+                <span className="text-muted-foreground text-xs">{result.comment}</span>
+              </div>
+            );
+          })}
+        </div>
       </Card>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        {SPEAKING_CRITERIA.map((key) => {
-          const info = CRITERIA_INFO[key];
-          const result = scoring[key];
-          return (
-            <Card key={key} className="flex flex-col gap-3">
-              <div className="flex items-baseline justify-between gap-2">
-                <CardTitle className="text-base">{info.label}</CardTitle>
-                <span className={cn("text-2xl font-bold tabular-nums", bandTone(result.band))}>
-                  {result.band.toFixed(1)}
+      {/* Evidence — the exact phrases Echo heard, grouped by criterion */}
+      <Card className="flex flex-col gap-4">
+        <CardTitle className="text-base">What Echo noticed</CardTitle>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {SPEAKING_CRITERIA.map((key) => {
+            const result = scoring[key];
+            if (result.evidence.length === 0) return null;
+            return (
+              <div key={key} className="flex flex-col gap-1.5">
+                <span className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+                  {CRITERIA_INFO[key].short}
                 </span>
-              </div>
-              <BandBar band={result.band} />
-              <p className="text-muted-foreground text-sm">{result.comment}</p>
-              {result.evidence.length > 0 && (
                 <ul className="flex flex-col gap-1.5">
                   {result.evidence.map((quote, i) => (
                     <li
@@ -83,15 +108,15 @@ export function ScoreReport({ scoring, transcript, className }: ScoreReportProps
                     </li>
                   ))}
                 </ul>
-              )}
-            </Card>
-          );
-        })}
-      </div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
 
-      <Card className="flex flex-col gap-3">
+      <Card tint="primary" className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
-          <span className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-full">
+          <span className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-full">
             <TrendingUp className="size-4" aria-hidden />
           </span>
           <CardTitle className="text-base">How to reach the next band</CardTitle>
@@ -118,9 +143,7 @@ export function ScoreReport({ scoring, transcript, className }: ScoreReportProps
                 <p
                   className={cn(
                     "rounded-xl px-3 py-2 text-sm",
-                    turn.role === "examiner"
-                      ? "bg-muted/60"
-                      : "bg-primary/5 border-primary/10 border",
+                    turn.role === "examiner" ? "bg-muted/60" : "bg-primary-soft",
                   )}
                 >
                   {turn.text}
