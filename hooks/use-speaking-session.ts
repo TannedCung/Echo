@@ -1,8 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
 
 import type { MascotState } from "@/components/mascot/echo-mascot";
+import type { ScoringResult } from "@/lib/ai/scoring-schema";
 import { useRecorder } from "@/hooks/use-recorder";
 import type { ConversationTurn } from "@/lib/conversation/types";
 import type { SpeakingMode } from "@/lib/ielts/examiner-flow";
@@ -13,12 +15,30 @@ export type SessionPhase =
   | "thinking" // streaming the examiner reply / transcribing
   | "ready" // candidate's turn — tap to answer
   | "recording" // capturing the candidate
-  | "complete" // part finished
+  | "scoring" // part finished, awaiting the band report
+  | "complete" // part finished and scored (inline report)
   | "error";
 
 interface HistoryEntry {
   role: "examiner" | "candidate";
   text: string;
+  audioUrl?: string | null;
+}
+
+/** Stores the answer clip in Blob (best-effort), returning its URL or null. */
+async function uploadAnswerAudio(blob: Blob): Promise<string | null> {
+  try {
+    const res = await fetch("/api/speaking/audio", {
+      method: "POST",
+      headers: { "Content-Type": blob.type || "audio/webm" },
+      body: blob,
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { url?: string | null };
+    return data.url ?? null;
+  } catch {
+    return null;
+  }
 }
 
 const MASCOT_BY_PHASE: Record<SessionPhase, MascotState> = {
@@ -27,6 +47,7 @@ const MASCOT_BY_PHASE: Record<SessionPhase, MascotState> = {
   thinking: "thinking",
   ready: "idle",
   recording: "listening",
+  scoring: "thinking",
   complete: "idle",
   error: "idle",
 };
@@ -37,9 +58,11 @@ const MASCOT_BY_PHASE: Record<SessionPhase, MascotState> = {
  * The examiner-flow question script lives server-side in /api/speaking/turn.
  */
 export function useSpeakingSession(mode: SpeakingMode = "part1") {
+  const router = useRouter();
   const recorder = useRecorder();
   const [phase, setPhase] = useState<SessionPhase>("idle");
   const [turns, setTurns] = useState<ConversationTurn[]>([]);
+  const [scoring, setScoring] = useState<ScoringResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const turnIndexRef = useRef(0); // candidate answers given so far
@@ -132,19 +155,50 @@ export function useSpeakingSession(mode: SpeakingMode = "part1") {
     return complete;
   }, [mode, speak]);
 
+  /**
+   * The part is over: score the transcript. When a report is persisted we hand
+   * off to its page; otherwise (no DB) we keep the band report inline.
+   */
+  const finishAndScore = useCallback(async () => {
+    setPhase("scoring");
+    try {
+      const res = await fetch("/api/speaking/score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode, turns: historyRef.current }),
+      });
+      if (!res.ok) throw new Error("We couldn't score that session — give it another go.");
+      const data = (await res.json()) as { sessionId: string | null; scoring: ScoringResult };
+      if (data.sessionId) {
+        router.push(`/reports/${data.sessionId}`);
+        return; // stay on "scoring" while the report page loads
+      }
+      setScoring(data.scoring);
+      setPhase("complete");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong while scoring.");
+      setPhase("error");
+    }
+  }, [mode, router]);
+
   const start = useCallback(async () => {
     setError(null);
+    setScoring(null);
     setTurns([]);
     historyRef.current = [];
     turnIndexRef.current = 0;
     try {
       const complete = await runExaminerTurn();
-      setPhase(complete ? "complete" : "ready");
+      if (complete) {
+        await finishAndScore();
+      } else {
+        setPhase("ready");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
       setPhase("error");
     }
-  }, [runExaminerTurn]);
+  }, [runExaminerTurn, finishAndScore]);
 
   const beginAnswer = useCallback(async () => {
     setError(null);
@@ -160,30 +214,39 @@ export function useSpeakingSession(mode: SpeakingMode = "part1") {
       return;
     }
     try {
-      const res = await fetch("/api/stt/transcribe", {
-        method: "POST",
-        headers: { "Content-Type": blob.type },
-        body: blob,
-      });
+      // Transcribe and archive the clip in parallel — neither blocks the other.
+      const [res, audioUrl] = await Promise.all([
+        fetch("/api/stt/transcribe", {
+          method: "POST",
+          headers: { "Content-Type": blob.type },
+          body: blob,
+        }),
+        uploadAnswerAudio(blob),
+      ]);
       if (!res.ok) throw new Error("Couldn't transcribe your answer — give it another go.");
       const data = (await res.json()) as { text?: string };
       const text = data.text?.trim() || "(no speech detected)";
 
-      setTurns((prev) => [...prev, { role: "candidate", text }]);
-      historyRef.current = [...historyRef.current, { role: "candidate", text }];
+      setTurns((prev) => [...prev, { role: "candidate", text, audioUrl: audioUrl ?? undefined }]);
+      historyRef.current = [...historyRef.current, { role: "candidate", text, audioUrl }];
       turnIndexRef.current += 1;
 
       const complete = await runExaminerTurn();
-      setPhase(complete ? "complete" : "ready");
+      if (complete) {
+        await finishAndScore();
+      } else {
+        setPhase("ready");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
       setPhase("error");
     }
-  }, [recorder, runExaminerTurn]);
+  }, [recorder, runExaminerTurn, finishAndScore]);
 
   return {
     phase,
     turns,
+    scoring,
     error: error ?? recorder.error,
     mascotState: MASCOT_BY_PHASE[phase],
     level: recorder.level,

@@ -1,11 +1,11 @@
 "use client";
 
-import { Loader2, Mic, RotateCcw, Sparkles, Square } from "lucide-react";
+import { Loader2, Mic, RotateCcw, Square } from "lucide-react";
 
 import { EchoMascot } from "@/components/mascot/echo-mascot";
 import { LiveTranscript } from "@/components/practice/live-transcript";
+import { ScoreReport } from "@/components/reports/score-report";
 import { Button } from "@/components/ui/button";
-import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { useSpeakingSession, type SessionPhase } from "@/hooks/use-speaking-session";
 
 const STATUS: Partial<Record<SessionPhase, string>> = {
@@ -13,6 +13,7 @@ const STATUS: Partial<Record<SessionPhase, string>> = {
   thinking: "Echo is thinking…",
   ready: "Your turn — tap to answer",
   recording: "Listening… speak now, then tap done",
+  scoring: "Scoring your answers against the band descriptors…",
 };
 
 export function SpeakingSession() {
@@ -31,6 +32,18 @@ export function SpeakingSession() {
         </div>
         <Button size="lg" onClick={session.start}>
           Start session
+        </Button>
+      </div>
+    );
+  }
+
+  if (session.phase === "complete" && session.scoring) {
+    return (
+      <div className="flex w-full flex-col items-center gap-6">
+        <EchoMascot state="idle" size="md" label="Nice work — here's your report" />
+        <ScoreReport scoring={session.scoring} transcript={session.turns} />
+        <Button onClick={session.start} variant="outline">
+          <RotateCcw className="size-4" aria-hidden /> Practice again
         </Button>
       </div>
     );
@@ -81,7 +94,9 @@ export function SpeakingSession() {
             <Square className="size-4" aria-hidden /> Done answering
           </Button>
         )}
-        {(session.phase === "examiner" || session.phase === "thinking") && (
+        {(session.phase === "examiner" ||
+          session.phase === "thinking" ||
+          session.phase === "scoring") && (
           <Button size="lg" disabled>
             <Loader2 className="size-4 animate-spin" aria-hidden /> Please wait
           </Button>
@@ -92,22 +107,6 @@ export function SpeakingSession() {
           </Button>
         )}
       </div>
-
-      {session.phase === "complete" && (
-        <Card className="bg-primary/5 flex w-full flex-col items-center gap-3 text-center">
-          <span className="bg-primary/10 text-primary flex size-11 items-center justify-center rounded-full">
-            <Sparkles className="size-6" aria-hidden />
-          </span>
-          <CardTitle>Nice work — Part 1 complete!</CardTitle>
-          <CardDescription className="max-w-sm">
-            Band scoring against the official descriptors arrives in the next build. For now, you
-            can run through the questions again.
-          </CardDescription>
-          <Button onClick={session.start} variant="outline">
-            <RotateCcw className="size-4" aria-hidden /> Practice again
-          </Button>
-        </Card>
-      )}
     </div>
   );
 }
