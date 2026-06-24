@@ -1,0 +1,267 @@
+@import "tailwindcss";
+
+/* ──────────────────────────────────────────────────────────────
+   Echo — "Friendly" design language
+   Warm paper background, calm teal/sage primary, coral accent,
+   generous rounding. Tokens are consumed via Tailwind v4 @theme.
+   ────────────────────────────────────────────────────────────── */
+
+:root {
+  --background: #faf8f5; /* warm paper */
+  --foreground: #2b2b33; /* soft near-black */
+
+  --card: #ffffff;
+  --card-foreground: #2b2b33;
+
+  --muted: #f1ece4;
+  --muted-foreground: #6b6459;
+
+  --primary: #1fb6a6; /* teal */
+  --primary-foreground: #ffffff;
+
+  --accent: #ff6f61; /* coral */
+  --accent-foreground: #ffffff;
+
+  --success: #3fb27f;
+  --warning: #e8a33d;
+  --destructive: #e5544b;
+
+  --border: #e8e1d6;
+  --input: #e8e1d6;
+  --ring: #1fb6a6;
+
+  --radius: 1rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1a1b22; /* deep warm slate */
+    --foreground: #ece8e1;
+    --card: #23242d;
+    --card-foreground: #ece8e1;
+    --muted: #2b2c36;
+    --muted-foreground: #a39d92;
+    --primary: #2cd0bd;
+    --primary-foreground: #0d2b27;
+    --accent: #ff7d70;
+    --accent-foreground: #2a0f0b;
+    --border: #34353f;
+    --input: #34353f;
+    --ring: #2cd0bd;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 0.25rem);
+  --radius-sm: calc(var(--radius) - 0.5rem);
+  --radius-xl: calc(var(--radius) + 0.5rem);
+  --radius-2xl: calc(var(--radius) + 1rem);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Echo mascot — a friendly voice companion. Motion is driven entirely
+   by the `data-state` attribute (idle | listening | thinking | speaking)
+   so a Rive/Lottie asset can later swap in behind the same <EchoMascot>
+   component. All animation honors prefers-reduced-motion (rule below).
+   ────────────────────────────────────────────────────────────── */
+.echo-mascot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.echo-mascot svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.echo-face-fill {
+  fill: var(--primary);
+}
+.echo-ink {
+  fill: var(--primary-foreground);
+}
+.echo-highlight {
+  fill: #ffffff;
+  opacity: 0.16;
+}
+.echo-mouth {
+  fill: none;
+  stroke: var(--primary-foreground);
+  stroke-width: 4;
+  stroke-linecap: round;
+  transition: opacity 0.2s ease;
+}
+.echo-ring {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 3;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.echo-dot {
+  fill: var(--accent);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.echo-bar {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+}
+.echo-bars,
+.echo-dots {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.echo-face-group {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: echo-breathe 3.4s ease-in-out infinite;
+}
+.echo-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: echo-blink 5.5s ease-in-out infinite;
+}
+
+/* speaking — equalizer bars replace the smile, face holds still */
+.echo-mascot[data-state="speaking"] .echo-face-group {
+  animation: none;
+}
+.echo-mascot[data-state="speaking"] .echo-mouth {
+  opacity: 0;
+}
+.echo-mascot[data-state="speaking"] .echo-bars {
+  opacity: 1;
+}
+.echo-mascot[data-state="speaking"] .echo-bar {
+  animation: echo-bar 0.8s ease-in-out infinite;
+}
+.echo-mascot[data-state="speaking"] .echo-bar:nth-child(2) {
+  animation-delay: 0.12s;
+}
+.echo-mascot[data-state="speaking"] .echo-bar:nth-child(3) {
+  animation-delay: 0.24s;
+}
+.echo-mascot[data-state="speaking"] .echo-bar:nth-child(4) {
+  animation-delay: 0.36s;
+}
+.echo-mascot[data-state="speaking"] .echo-bar:nth-child(5) {
+  animation-delay: 0.48s;
+}
+
+/* listening — concentric echo rings ripple outward */
+.echo-mascot[data-state="listening"] .echo-ring {
+  animation: echo-ring 1.9s ease-out infinite;
+}
+.echo-mascot[data-state="listening"] .echo-ring:nth-child(2) {
+  animation-delay: 0.63s;
+}
+.echo-mascot[data-state="listening"] .echo-ring:nth-child(3) {
+  animation-delay: 1.26s;
+}
+
+/* thinking — three dots bounce above the head */
+.echo-mascot[data-state="thinking"] .echo-dots {
+  opacity: 1;
+}
+.echo-mascot[data-state="thinking"] .echo-dot {
+  animation: echo-bounce 1.3s ease-in-out infinite;
+}
+.echo-mascot[data-state="thinking"] .echo-dot:nth-child(2) {
+  animation-delay: 0.18s;
+}
+.echo-mascot[data-state="thinking"] .echo-dot:nth-child(3) {
+  animation-delay: 0.36s;
+}
+.echo-mascot[data-state="thinking"] .echo-face-group {
+  animation-duration: 2.4s;
+}
+
+@keyframes echo-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.045);
+  }
+}
+@keyframes echo-blink {
+  0%,
+  93%,
+  100% {
+    transform: scaleY(1);
+  }
+  96.5% {
+    transform: scaleY(0.12);
+  }
+}
+@keyframes echo-ring {
+  0% {
+    transform: scale(0.5);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+}
+@keyframes echo-bar {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+@keyframes echo-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-26%);
+  }
+}
+
+/* Respect users who prefer reduced motion (mascot + transitions). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
