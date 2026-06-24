@@ -3,18 +3,21 @@
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 
+import { EchoMascot } from "@/components/mascot/echo-mascot";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 export default function SignInPage() {
   return (
     <main className="flex flex-1 items-center justify-center px-6 py-16">
-      <div className="border-border bg-card w-full max-w-sm rounded-2xl border p-8 text-center shadow-sm">
-        <Link href="/" className="text-2xl font-extrabold tracking-tight">
+      <Card className="flex w-full max-w-sm flex-col items-center p-8 text-center">
+        <EchoMascot state="idle" size="md" />
+        <Link href="/" className="mt-4 text-2xl font-extrabold tracking-tight">
           <span className="text-primary">Echo</span>
         </Link>
         <p className="text-muted-foreground mt-1 text-sm">Hear it. Say it. Own it.</p>
 
-        <div className="mt-8 flex flex-col gap-3">
+        <div className="mt-8 flex w-full flex-col gap-3">
           <Button
             size="lg"
             variant="outline"
@@ -30,7 +33,7 @@ export default function SignInPage() {
         <p className="text-muted-foreground mt-6 text-xs">
           Guest sessions let you practice right away. Sign in with Google to save your progress.
         </p>
-      </div>
+      </Card>
     </main>
   );
 }
