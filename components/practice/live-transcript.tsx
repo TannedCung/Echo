@@ -29,7 +29,7 @@ export function LiveTranscript({
         >
           <span
             className={cn(
-              "max-w-[80%] rounded-2xl px-4 py-2 text-sm",
+              "max-w-[80%] rounded-[var(--radius)] px-4 py-2 text-sm leading-relaxed",
               turn.role === "candidate"
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted text-foreground",

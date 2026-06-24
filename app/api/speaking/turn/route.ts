@@ -3,8 +3,7 @@ import { z } from "zod";
 
 import { auth } from "@/auth";
 import { examinerAgent } from "@/lib/ai/agents/examiner-agent";
-import type { SpeakingMode } from "@/lib/ielts/examiner-flow";
-import { questionsForMode } from "@/lib/ielts/question-bank";
+import { partLabel, planTurn, type ExaminerMove } from "@/lib/ielts/speaking-script";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -18,42 +17,59 @@ const turnSchema = z.object({
     .default([]),
 });
 
-/** Flattened ordered question list for a mode (prompt + its follow-ups). */
-function questionScript(mode: SpeakingMode): string[] {
-  return questionsForMode(mode).flatMap((item) => [item.prompt, ...item.followUps]);
+/** Per-turn directive that steers the examiner to deliver the planned move. */
+function directorNote(move: ExaminerMove, isFirst: boolean, partChanged: boolean): string {
+  if (move.kind === "closing") {
+    return "The session questions are finished. Warmly thank the candidate, tell them that's the end of the test and you'll prepare their feedback. Keep it to 1–2 sentences and do NOT ask another question.";
+  }
+
+  if (move.kind === "cue_card") {
+    return [
+      "It is now Part 2 — the long turn. In one short sentence, tell the candidate you're going to give them a topic to talk about for one to two minutes, and that they have one minute to prepare and can make notes.",
+      `Then read out this exact cue card topic: "${move.prompt}".`,
+      "Do NOT read the bullet points as separate questions and do NOT add your own questions. Keep your whole reply to 2–3 sentences.",
+    ].join(" ");
+  }
+
+  const transition = partChanged
+    ? `You are now moving into ${partLabel(move.part)}. Briefly signal the change in a few words, then `
+    : "Briefly and naturally acknowledge the candidate's previous answer in a few words, then ";
+
+  if (isFirst) {
+    return `This is the very start of the IELTS Speaking test (${partLabel(move.part)}). Greet the candidate warmly in one short sentence, then ask exactly this question: "${move.text}". Keep your whole reply to 2 sentences.`;
+  }
+
+  return `${transition}ask exactly this question: "${move.text}". Keep your whole reply to 2 sentences.`;
 }
 
-/** Per-turn directive that steers the examiner to ask the right next question. */
-function directorNote(mode: SpeakingMode, turnIndex: number): { note: string; complete: boolean } {
-  const questions = questionScript(mode);
-  const partLabel = mode === "full_mock" ? "Part 1" : mode.replace("part", "Part ");
-
-  if (turnIndex >= questions.length) {
+/** Client-facing metadata so the UI can render cue cards and Part 2 timers. */
+function moveMeta(move: ExaminerMove, partChanged: boolean) {
+  if (move.kind === "closing") {
+    return { kind: "closing" as const };
+  }
+  if (move.kind === "cue_card") {
     return {
-      note: `The ${partLabel} questions are finished. Warmly thank the candidate, tell them that's the end of this part and you'll prepare their feedback. Keep it to 1–2 sentences and do NOT ask another question.`,
-      complete: true,
+      kind: "cue_card" as const,
+      part: move.part,
+      partChanged,
+      topic: move.topic,
+      cueCard: {
+        prompt: move.prompt,
+        bullets: move.bullets,
+        prepSeconds: move.prepSeconds,
+        talkSeconds: move.talkSeconds,
+      },
     };
   }
-
-  const question = questions[turnIndex];
-  if (turnIndex === 0) {
-    return {
-      note: `This is the very start of IELTS Speaking ${partLabel}. Greet the candidate warmly in one short sentence, then ask exactly this question: "${question}". Keep your whole reply to 2 sentences.`,
-      complete: false,
-    };
-  }
-
-  return {
-    note: `Briefly and naturally acknowledge the candidate's previous answer in a few words, then ask exactly this question: "${question}". Keep your whole reply to 2 sentences.`,
-    complete: false,
-  };
+  return { kind: "question" as const, part: move.part, partChanged, topic: move.topic };
 }
 
 /**
- * Streams the examiner's next utterance (Server-Sent Events). The examiner-flow
- * question bank steers which question to ask; the Mastra examiner agent phrases
- * it naturally given the conversation so far. The final SSE frame carries
- * `{ done, complete }` so the client knows whether the part is over.
+ * Streams the examiner's next utterance (Server-Sent Events). The flow planner
+ * (lib/ielts/speaking-script) decides the move for this turn — a Part 1/3
+ * question, the Part 2 cue card, or the closing — and the Mastra examiner agent
+ * phrases it naturally. The first SSE frame carries `meta` (so the client can
+ * render cue cards / timers); the final frame carries `{ done, complete }`.
  */
 export async function POST(request: Request) {
   const session = await auth();
@@ -66,7 +82,8 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid request body" }, { status: 400 });
   }
   const { mode, turnIndex, history } = parsed.data;
-  const { note, complete } = directorNote(mode, turnIndex);
+  const { move, complete, isFirst, partChanged } = planTurn(mode, turnIndex);
+  const note = directorNote(move, isFirst, partChanged);
 
   const messages: ModelMessage[] = [
     ...history.map(
@@ -84,6 +101,7 @@ export async function POST(request: Request) {
       const send = (data: unknown) =>
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
       try {
+        send({ meta: moveMeta(move, partChanged) });
         const result = await examinerAgent.stream(messages);
         for await (const delta of result.textStream) {
           send({ delta });
