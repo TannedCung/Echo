@@ -21,7 +21,7 @@ export function Card({ className, tint, ...props }: CardProps) {
   return (
     <div
       className={cn(
-        "border-border bg-card rounded-2xl border p-6 shadow-sm",
+        "border-border bg-card rounded-[var(--radius)] border p-6 shadow-sm",
         tint && TINTS[tint],
         className,
       )}
