@@ -10,6 +10,7 @@ interface TopNavProps {
 const links = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/practice/speaking", label: "Practice" },
+  { href: "/progress", label: "Progress" },
 ];
 
 export function TopNav({ name, isGuest }: TopNavProps) {

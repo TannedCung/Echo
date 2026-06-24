@@ -142,3 +142,60 @@ export async function getRecentSessions(userId: string, limit = 5): Promise<Spea
     .orderBy(desc(speakingSessions.startedAt))
     .limit(limit);
 }
+
+export interface SpeakingStats {
+  sessionCount: number;
+  bestBand: number | null;
+  dayStreak: number;
+  /** All sessions newest-first — drives the history list and band trend. */
+  sessions: SpeakingSession[];
+}
+
+/** Local-midnight epoch for a date, so streaks compare whole calendar days. */
+function startOfDay(date: Date): number {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
+
+/** Consecutive-day streak ending today or yesterday, from session dates. */
+function computeDayStreak(dates: Date[]): number {
+  if (dates.length === 0) return 0;
+  const days = [...new Set(dates.map(startOfDay))].sort((a, b) => b - a);
+  const DAY = 86_400_000;
+  const today = startOfDay(new Date());
+  // The streak is only "live" if practice happened today or yesterday.
+  if (days[0] !== today && days[0] !== today - DAY) return 0;
+
+  let streak = 1;
+  for (let i = 1; i < days.length; i++) {
+    if (days[i - 1] - days[i] === DAY) streak++;
+    else break;
+  }
+  return streak;
+}
+
+/**
+ * Aggregate progress for a learner: how many sessions, their best overall band,
+ * a current day streak, and the full session list (newest first) for trends and
+ * history. One query feeds both the dashboard tiles and the progress screen.
+ */
+export async function getSpeakingStats(userId: string): Promise<SpeakingStats> {
+  const db = getDb();
+  const sessions = await db
+    .select()
+    .from(speakingSessions)
+    .where(eq(speakingSessions.userId, userId))
+    .orderBy(desc(speakingSessions.startedAt));
+
+  const bands = sessions
+    .map((s) => s.overallBand)
+    .filter((b): b is number => typeof b === "number");
+
+  return {
+    sessionCount: sessions.length,
+    bestBand: bands.length ? Math.max(...bands) : null,
+    dayStreak: computeDayStreak(sessions.map((s) => s.startedAt)),
+    sessions,
+  };
+}
