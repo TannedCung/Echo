@@ -1,5 +1,6 @@
 import { env } from "@/lib/env";
 import { deepgramProvider } from "./deepgram";
+import { openaiSttProvider } from "./openai";
 import type { SttProvider } from "./types";
 
 const providers = new Map<string, SttProvider>();
@@ -9,6 +10,7 @@ export function registerSttProvider(provider: SttProvider) {
 }
 
 registerSttProvider(deepgramProvider);
+registerSttProvider(openaiSttProvider);
 
 /** Resolve an STT provider by name, defaulting to ECHO_STT_PROVIDER. */
 export function getSttProvider(name: string = env.ECHO_STT_PROVIDER): SttProvider {
