@@ -1,5 +1,6 @@
 import type { SpeakingMode } from "@/lib/ielts/examiner-flow";
-import { partLabel, speakingScript, type ExaminerMove } from "@/lib/ielts/speaking-script";
+import { speakingScript, type ExaminerMove } from "@/lib/ielts/speaking-script";
+import type { QuestionPart } from "@/lib/ielts/question-bank";
 
 /**
  * System instruction for the Gemini Live examiner (Mode B).
@@ -7,57 +8,92 @@ import { partLabel, speakingScript, type ExaminerMove } from "@/lib/ielts/speaki
  * Unlike the chained engine — where the server plans each turn and the agent
  * only phrases one move — the Live model drives the whole conversation itself.
  * So the instruction carries the full persona AND the planned shape of this
- * session (the topics to cover and the Part 2 cue card), and asks the model to
- * pace the test naturally from greeting to close. This module is client-safe
- * (pure ielts data only) so the realtime engine can import it in the browser.
+ * session: a standard IELTS introduction, then the parts in order (signposted
+ * like a real exam) and the Part 2 cue card. This module is client-safe (pure
+ * ielts data only) so the realtime engine can import it in the browser.
  */
 
 const PERSONA = `
-You are "Echo", a warm, encouraging IELTS Speaking examiner conducting a spoken
-test out loud. Keep the candidate calm and confident while running a realistic
-exam.
+You are "Echo", a warm, encouraging IELTS Speaking examiner conducting a real
+spoken IELTS Speaking test out loud. You are NOT a generic chat assistant: never
+say things like "Hello, how can I help you?" — you run the exam and lead it.
 
 How to behave:
 - Speak naturally and conversationally, never robotic or harsh.
 - Ask ONE question at a time, then STOP and listen. Let the candidate finish
-  before you respond — do not talk over them.
-- Briefly and warmly acknowledge each answer, then move on. Keep your own turns
-  short; the candidate should do most of the talking.
-- Adapt natural follow-ups to what the candidate actually says.
-- NEVER reveal scores, band estimates, or assessment during the test — that
-  happens separately afterwards.
+  before responding — never talk over them.
+- Briefly and warmly acknowledge each answer ("Thank you.", "That's interesting.")
+  then move on. Keep your own turns short; the candidate should do most of the talking.
+- Add natural follow-ups based on what the candidate actually says.
+- Clearly signpost each section out loud so it feels like a real test.
+- NEVER reveal scores, band estimates, or assessment during the test — feedback
+  is prepared separately afterwards.
 `.trim();
 
-function describeMove(move: ExaminerMove): string {
-  if (move.kind === "closing") return "";
+const INTRODUCTION = `
+Introduction — do this FIRST, before Part 1:
+- Greet the candidate and introduce yourself: "Hello, my name is Echo, and I'll
+  be your examiner today. This is the IELTS Speaking test."
+- Ask the candidate to tell you their full name.
+- Ask where they are from, or where they live, and acknowledge it warmly.
+Then move into Part 1.
+`.trim();
+
+/** Canonical examiner framing announced at the start of each part. */
+const PART_INTRO: Record<QuestionPart, string> = {
+  part1: `Part 1 — Interview. Say you'd like to ask some questions about the candidate and familiar topics. Then ask these one at a time, with natural follow-ups:`,
+  part2: `Part 2 — Individual long turn.`,
+  part3: `Part 3 — Two-way discussion. Say you'd like to discuss some more general questions related to the Part 2 topic. Then ask these one at a time, with natural follow-ups:`,
+};
+
+function moveLine(move: ExaminerMove): string {
   if (move.kind === "cue_card") {
     return [
-      `${partLabel(move.part)} — the long turn. Tell the candidate you'll give them a topic to`,
-      `talk about for one to two minutes, with one minute to prepare and make notes. Read this`,
-      `cue card aloud: "${move.prompt}". Mention they may cover: ${move.bullets.join("; ")}.`,
-      `Then stay quiet for their preparation and their long answer — do not interrupt.`,
+      `Tell the candidate you'll give them a topic to talk about for one to two minutes, with one`,
+      `minute to prepare and make notes. Read this cue card aloud: "${move.prompt}". Add that they`,
+      `may also cover: ${move.bullets.join("; ")}. Give them about a minute to prepare in silence,`,
+      `then let them speak without interrupting. When they finish, ask one short rounding-off question.`,
     ].join(" ");
   }
-  return `${partLabel(move.part)} (topic: ${move.topic}) — ask: "${move.text}"`;
+  if (move.kind === "question") return `Ask: "${move.text}"`;
+  return "";
 }
 
 /** Builds the full self-driving examiner instruction for a session mode. */
 export function buildLiveInstructions(mode: SpeakingMode): string {
   const moves = speakingScript(mode);
-  const plan = moves
-    .map(describeMove)
-    .filter(Boolean)
-    .map((line, i) => `${i + 1}. ${line}`)
-    .join("\n");
+
+  const sections: string[] = [];
+  let currentPart: QuestionPart | null = null;
+  let lines: string[] = [];
+
+  const flush = () => {
+    if (currentPart && lines.length) {
+      const body = lines.map((line, i) => `  ${i + 1}. ${line}`).join("\n");
+      sections.push(`${PART_INTRO[currentPart]}\n${body}`);
+    }
+    lines = [];
+  };
+
+  for (const move of moves) {
+    if (move.kind === "closing") continue;
+    if (move.part !== currentPart) {
+      flush();
+      currentPart = move.part;
+    }
+    lines.push(moveLine(move));
+  }
+  flush();
 
   return `${PERSONA}
 
-Plan for this session — work through these in order, sounding spontaneous rather
-than reading a list. Begin by greeting the candidate warmly in one short
-sentence, then start:
+${INTRODUCTION}
 
-${plan}
+Then work through the test in this exact order, sounding spontaneous rather than
+reading a list. Announce each part out loud as you reach it:
 
-When you have covered everything, warmly thank the candidate, tell them that's
-the end of the speaking test and you'll prepare their feedback, then stop.`;
+${sections.join("\n\n")}
+
+When you have covered everything, warmly thank the candidate and say: "That's the
+end of the speaking test. Thank you very much." Then stop.`;
 }
