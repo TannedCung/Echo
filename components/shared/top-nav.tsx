@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 import { EchoLogo } from "@/components/brand/echo-logo";
-import { SignOutButton } from "@/components/shared/sign-out-button";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { UserMenu } from "@/components/shared/user-menu";
 
 interface TopNavProps {
   name?: string | null;
@@ -16,8 +16,6 @@ const links = [
 ];
 
 export function TopNav({ name, isGuest }: TopNavProps) {
-  const displayName = isGuest ? "Guest" : (name?.split(" ")[0] ?? "You");
-
   return (
     <header className="border-border bg-background/80 sticky top-0 z-20 border-b backdrop-blur">
       <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-4 px-6">
@@ -39,11 +37,7 @@ export function TopNav({ name, isGuest }: TopNavProps) {
 
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          <span className="text-muted-foreground hidden text-sm sm:inline">
-            {displayName}
-            {isGuest ? " · guest" : ""}
-          </span>
-          <SignOutButton />
+          <UserMenu name={name} isGuest={isGuest} />
         </div>
       </div>
     </header>
