@@ -31,6 +31,8 @@ export const env = createEnv({
     ELEVENLABS_VOICE_ID: z.string().optional(),
 
     GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
+    // Gemini Live (Mode B). The native-audio S2S model the realtime engine uses.
+    ECHO_LIVE_MODEL: z.string().default("gemini-3.1-flash-live-preview"),
 
     BLOB_READ_WRITE_TOKEN: z.string().optional(),
   },
@@ -54,6 +56,7 @@ export const env = createEnv({
     ELEVENLABS_API_KEY: process.env.ELEVENLABS_API_KEY,
     ELEVENLABS_VOICE_ID: process.env.ELEVENLABS_VOICE_ID,
     GOOGLE_GENERATIVE_AI_API_KEY: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+    ECHO_LIVE_MODEL: process.env.ECHO_LIVE_MODEL,
     BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN,
     NEXT_PUBLIC_CONVERSATION_MODE: process.env.NEXT_PUBLIC_CONVERSATION_MODE,
   },
@@ -63,6 +66,9 @@ export const env = createEnv({
 
 /** True when Google OAuth is configured (otherwise only guest mode is offered). */
 export const isGoogleAuthConfigured = !!env.AUTH_GOOGLE_ID && !!env.AUTH_GOOGLE_SECRET;
+
+/** True when the Gemini Live (Mode B) realtime engine can be used. */
+export const isLiveConfigured = !!env.GOOGLE_GENERATIVE_AI_API_KEY;
 
 /** Assert an optional server env var is present at the point of use. */
 export function requireEnv<K extends keyof typeof env>(key: K): NonNullable<(typeof env)[K]> {
