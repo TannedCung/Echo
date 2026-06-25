@@ -43,6 +43,7 @@ export function useLiveSession(mode: SpeakingMode = "full_mock") {
   const [turns, setTurns] = useState<ConversationTurn[]>([]);
   const [scoring, setScoring] = useState<ScoringResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [echoSpeaking, setEchoSpeaking] = useState(false);
 
   const engineRef = useRef<GeminiLiveEngine | null>(null);
   const historyRef = useRef<FinalTurn[]>([]);
@@ -62,6 +63,7 @@ export function useLiveSession(mode: SpeakingMode = "full_mock") {
     setError(null);
     setScoring(null);
     setTurns([]);
+    setEchoSpeaking(false);
     historyRef.current = [];
     setPhase("connecting");
 
@@ -80,6 +82,7 @@ export function useLiveSession(mode: SpeakingMode = "full_mock") {
             upsertTurn(turn);
             if (!turn.partial) historyRef.current.push({ role: "candidate", text: turn.text });
           },
+          onSpeakingChange: setEchoSpeaking,
           onError: (err) => {
             setError(err.message);
             setPhase("error");
@@ -97,6 +100,7 @@ export function useLiveSession(mode: SpeakingMode = "full_mock") {
   const finish = useCallback(async () => {
     await engineRef.current?.stop().catch(() => {});
     engineRef.current = null;
+    setEchoSpeaking(false);
     setPhase("scoring");
 
     const transcript = historyRef.current;
@@ -129,17 +133,24 @@ export function useLiveSession(mode: SpeakingMode = "full_mock") {
   const cancel = useCallback(async () => {
     await engineRef.current?.stop().catch(() => {});
     engineRef.current = null;
+    setEchoSpeaking(false);
     setPhase("idle");
     setTurns([]);
     historyRef.current = [];
   }, []);
+
+  // While live, the mascot tracks who's talking: speaking when Echo plays audio,
+  // listening otherwise. Other phases use their fixed state.
+  const mascotState: MascotState =
+    phase === "live" ? (echoSpeaking ? "speaking" : "listening") : MASCOT_BY_PHASE[phase];
 
   return {
     phase,
     turns,
     scoring,
     error,
-    mascotState: MASCOT_BY_PHASE[phase],
+    echoSpeaking,
+    mascotState,
     start,
     finish,
     cancel,

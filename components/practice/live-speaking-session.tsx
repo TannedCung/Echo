@@ -55,14 +55,17 @@ export function LiveSpeakingSession() {
 
   return (
     <div className="flex w-full max-w-2xl flex-col items-center gap-6">
-      <EchoMascot state={session.mascotState} size="lg" />
-      <Badge tone="accent">Live mode</Badge>
+      <div className="bg-background/85 sticky top-16 z-10 flex w-full flex-col items-center gap-3 rounded-[var(--radius)] py-4 backdrop-blur">
+        <EchoMascot state={session.mascotState} size="lg" />
+        <Badge tone="accent">Live mode</Badge>
 
-      <p aria-live="polite" className="text-muted-foreground text-sm font-medium">
-        {session.phase === "connecting" && "Connecting to Echo…"}
-        {session.phase === "live" && "Listening — just talk naturally"}
-        {session.phase === "scoring" && "Scoring your conversation against the band descriptors…"}
-      </p>
+        <p aria-live="polite" className="text-muted-foreground text-sm font-medium">
+          {session.phase === "connecting" && "Connecting to Echo…"}
+          {session.phase === "live" &&
+            (session.echoSpeaking ? "Echo is speaking…" : "Listening — just talk naturally")}
+          {session.phase === "scoring" && "Scoring your conversation against the band descriptors…"}
+        </p>
+      </div>
 
       <LiveTranscript turns={session.turns} className="w-full" />
 

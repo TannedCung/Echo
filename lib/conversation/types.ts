@@ -29,6 +29,8 @@ export interface ConversationCallbacks {
   onStateChange?(state: ExaminerState): void;
   onExaminerText?(turn: ConversationTurn): void;
   onCandidateText?(turn: ConversationTurn): void;
+  /** Fires when the examiner starts (true) or stops (false) speaking aloud. */
+  onSpeakingChange?(speaking: boolean): void;
   onError?(error: Error): void;
 }
 

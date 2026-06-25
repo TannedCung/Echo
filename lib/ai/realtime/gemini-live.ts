@@ -61,6 +61,8 @@ export class GeminiLiveEngine implements ConversationEngine {
 
   private outputCtx: AudioContext | null = null;
   private playHead = 0; // scheduled-audio cursor for gapless 24 kHz playback
+  private speaking = false;
+  private speakingTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Accumulated text for the current streaming turn, flushed on turnComplete.
   private candidateText = "";
@@ -97,6 +99,15 @@ export class GeminiLiveEngine implements ConversationEngine {
 
     // 3. Start streaming the mic.
     await this.startCapture();
+
+    // 4. Kick the examiner off so it LEADS — greeting + introduction + Part 1 —
+    // instead of waiting for the candidate (which makes it fall back to a generic
+    // "how can I help you?"). This text cue isn't audio, so it never lands in the
+    // candidate transcript that gets scored.
+    this.session.sendClientContent({
+      turns: "Begin the IELTS Speaking test now: greet me and start the introduction.",
+      turnComplete: true,
+    });
   }
 
   /** With automatic VAD the model detects end-of-speech; signal it explicitly too. */
@@ -105,6 +116,11 @@ export class GeminiLiveEngine implements ConversationEngine {
   }
 
   async stop(): Promise<void> {
+    if (this.speakingTimer) {
+      clearTimeout(this.speakingTimer);
+      this.speakingTimer = null;
+    }
+    this.setSpeaking(false);
     this.worklet?.disconnect();
     this.worklet = null;
     this.micStream?.getTracks().forEach((t) => t.stop());
@@ -200,9 +216,28 @@ export class GeminiLiveEngine implements ConversationEngine {
     this.playHead = Math.max(this.playHead, this.outputCtx.currentTime);
     node.start(this.playHead);
     this.playHead += buffer.duration;
+
+    // Echo is audibly speaking until the scheduled audio runs out; the mascot
+    // mirrors this. Re-arm the "stopped" timer on every chunk so it only fires
+    // once playback truly drains.
+    this.setSpeaking(true);
+    if (this.speakingTimer) clearTimeout(this.speakingTimer);
+    const msUntilSilent = Math.max(0, (this.playHead - this.outputCtx.currentTime) * 1000) + 120;
+    this.speakingTimer = setTimeout(() => this.setSpeaking(false), msUntilSilent);
+  }
+
+  private setSpeaking(speaking: boolean): void {
+    if (this.speaking === speaking) return;
+    this.speaking = speaking;
+    this.callbacks.onSpeakingChange?.(speaking);
   }
 
   private resetPlayback(): void {
+    if (this.speakingTimer) {
+      clearTimeout(this.speakingTimer);
+      this.speakingTimer = null;
+    }
+    this.setSpeaking(false);
     if (!this.outputCtx) return;
     void this.outputCtx.close().catch(() => {});
     this.outputCtx = null;
