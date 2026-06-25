@@ -6,6 +6,7 @@ import {
   PART2_PREP_SECONDS,
   PART2_TALK_SECONDS,
   PART1_BUDGET_SECONDS,
+  SILENCE_REMINDER_SECONDS,
 } from "@/lib/ielts/examiner-flow";
 
 function makeActions() {
@@ -72,6 +73,41 @@ describe("LiveDirector", () => {
     vi.advanceTimersByTime(1000);
     const ticked = phases[phases.length - 1] as { countdown: number };
     expect(ticked.countdown).toBe(PART2_PREP_SECONDS - 1);
+  });
+
+  it("reminds the candidate when they stay silent after a question", () => {
+    const { actions, directives } = makeActions();
+    const director = new LiveDirector("full_mock", actions);
+
+    director.beginPart(1);
+    director.noteTurnComplete(); // examiner finished asking — candidate's turn
+    vi.advanceTimersByTime(SILENCE_REMINDER_SECONDS * 1000);
+
+    expect(directives.some((d) => d.includes("gone quiet"))).toBe(true);
+  });
+
+  it("does not remind if the candidate starts answering in time", () => {
+    const { actions, directives } = makeActions();
+    const director = new LiveDirector("full_mock", actions);
+
+    director.beginPart(1);
+    director.noteTurnComplete();
+    vi.advanceTimersByTime((SILENCE_REMINDER_SECONDS - 2) * 1000);
+    director.noteCandidateActivity(); // they spoke up
+    vi.advanceTimersByTime(SILENCE_REMINDER_SECONDS * 1000);
+
+    expect(directives.some((d) => d.includes("gone quiet"))).toBe(false);
+  });
+
+  it("does not remind during the Part 2 preparation silence", () => {
+    const { actions, directives } = makeActions();
+    const director = new LiveDirector("full_mock", actions);
+
+    director.startLongTurnPreparation();
+    director.noteTurnComplete(); // model finished reading the cue card
+    vi.advanceTimersByTime(SILENCE_REMINDER_SECONDS * 1000);
+
+    expect(directives.some((d) => d.includes("gone quiet"))).toBe(false);
   });
 
   it("wraps up a part once its budget is spent", () => {

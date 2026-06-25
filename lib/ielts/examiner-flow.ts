@@ -40,6 +40,8 @@ export const PART2_TALK_SECONDS = 120;
 export const PART1_BUDGET_SECONDS = 270; // ~4.5 min
 export const PART3_BUDGET_SECONDS = 270; // ~4.5 min
 export const ANSWER_SOFT_LIMIT_SECONDS = 55;
+/** Silence after a question past which the examiner gently nudges the candidate. */
+export const SILENCE_REMINDER_SECONDS = 12;
 
 const FULL_MOCK_ORDER: ExaminerState[] = [
   "intro",

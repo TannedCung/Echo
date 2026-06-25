@@ -5,6 +5,7 @@ import {
   PART2_PREP_SECONDS,
   PART2_TALK_SECONDS,
   PART3_BUDGET_SECONDS,
+  SILENCE_REMINDER_SECONDS,
   type SpeakingMode,
 } from "@/lib/ielts/examiner-flow";
 
@@ -16,6 +17,7 @@ import {
  * pushes private stage directions back when a deadline lands:
  *
  *   • candidate answering too long       → interrupt and move on
+ *   • candidate silent after a question   → gently remind / rephrase
  *   • Part 2 one-minute prep elapses      → tell them to start speaking
  *   • Part 2 two-minute long turn elapses → stop them, continue
  *   • a part runs over its budget          → wrap the part up
@@ -42,11 +44,13 @@ export class LiveDirector {
 
   private part: 1 | 2 | 3 | null = null;
   private inLongTurn = false;
+  private inPrep = false;
   private candidateAnswering = false;
   private interruptedThisTurn = false;
 
   private budgetTimer: Timer | null = null;
   private answerTimer: Timer | null = null;
+  private silenceTimer: Timer | null = null;
   private countdownTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(mode: SpeakingMode, actions: DirectorActions) {
@@ -88,6 +92,7 @@ export class LiveDirector {
   startLongTurnPreparation(): void {
     this.part = 2;
     this.inLongTurn = false;
+    this.inPrep = true; // silence here is intentional — no reminders during prep
     this.resetAnswerTracking();
     this.clearBudget();
 
@@ -95,6 +100,7 @@ export class LiveDirector {
       PART2_PREP_SECONDS,
       { part: 2, stage: "prep", label: "Part 2 · Preparing" },
       () => {
+        this.inPrep = false;
         this.actions.instruct(
           `${TAG} The candidate's one-minute preparation is over. Warmly invite them to begin their long-turn answer now, and let them speak for up to two minutes without interrupting.`,
         );
@@ -105,6 +111,7 @@ export class LiveDirector {
 
   /** The candidate is producing speech (input transcription arriving). */
   noteCandidateActivity(): void {
+    this.clearSilence(); // they've started — no need to nudge
     if (this.inLongTurn || this.interruptedThisTurn) return;
     if (this.candidateAnswering) return;
     this.candidateAnswering = true;
@@ -125,15 +132,34 @@ export class LiveDirector {
   /** The examiner's turn finished; the candidate's answer window opens fresh. */
   noteTurnComplete(): void {
     this.resetAnswerTracking();
+    this.armSilenceReminder();
+  }
+
+  /**
+   * After a question, if the candidate stays silent past the threshold, nudge
+   * the examiner to gently encourage or rephrase. Skipped during the Part 2 prep
+   * (silence is expected) and the long turn (they're mid-answer).
+   */
+  private armSilenceReminder(): void {
+    this.clearSilence();
+    if (this.inPrep || this.inLongTurn) return;
+    this.silenceTimer = setTimeout(() => {
+      this.actions.instruct(
+        `${TAG} The candidate has gone quiet and hasn't started answering. Gently check in — reassure them, and offer to rephrase or simplify the question. ${SILENT}`,
+      );
+    }, SILENCE_REMINDER_SECONDS * 1000);
   }
 
   /** Tear down every timer and clear the UI phase. */
   stop(): void {
     this.clearBudget();
     this.clearAnswerTimer();
+    this.clearSilence();
     this.clearCountdown();
     this.candidateAnswering = false;
     this.interruptedThisTurn = false;
+    this.inPrep = false;
+    this.inLongTurn = false;
     this.actions.onPhase?.(null);
   }
 
@@ -183,6 +209,7 @@ export class LiveDirector {
 
   private resetAnswerTracking(): void {
     this.clearAnswerTimer();
+    this.clearSilence();
     this.candidateAnswering = false;
     this.interruptedThisTurn = false;
   }
@@ -195,6 +222,11 @@ export class LiveDirector {
   private clearAnswerTimer(): void {
     if (this.answerTimer) clearTimeout(this.answerTimer);
     this.answerTimer = null;
+  }
+
+  private clearSilence(): void {
+    if (this.silenceTimer) clearTimeout(this.silenceTimer);
+    this.silenceTimer = null;
   }
 
   private clearCountdown(): void {
