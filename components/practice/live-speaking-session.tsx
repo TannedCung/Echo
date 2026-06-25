@@ -9,6 +9,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLiveSession } from "@/hooks/use-live-session";
 
+/** Seconds → m:ss for the phase countdown pill. */
+function formatClock(seconds: number): string {
+  const m = Math.floor(Math.max(seconds, 0) / 60);
+  const s = Math.max(seconds, 0) % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
 /**
  * Mode B (Gemini Live) speaking UI. A single bidirectional stream means there's
  * no per-turn "Answer / Done" — the candidate just talks naturally and Echo
@@ -57,12 +64,26 @@ export function LiveSpeakingSession() {
     <div className="flex w-full max-w-2xl flex-col items-center gap-6">
       <div className="bg-background/85 sticky top-16 z-10 flex w-full flex-col items-center gap-3 rounded-[var(--radius)] py-4 backdrop-blur">
         <EchoMascot state={session.mascotState} size="lg" />
-        <Badge tone="accent">Live mode</Badge>
+
+        <div className="flex items-center gap-2">
+          <Badge tone="accent">Live mode</Badge>
+          {session.examinerPhase && (
+            <Badge tone="primary">
+              {session.examinerPhase.label}
+              {session.examinerPhase.countdown !== undefined &&
+                ` · ${formatClock(session.examinerPhase.countdown)}`}
+            </Badge>
+          )}
+        </div>
 
         <p aria-live="polite" className="text-muted-foreground text-sm font-medium">
           {session.phase === "connecting" && "Connecting to Echo…"}
           {session.phase === "live" &&
-            (session.echoSpeaking ? "Echo is speaking…" : "Listening — just talk naturally")}
+            (session.examinerPhase?.stage === "prep"
+              ? "Prepare your answer — make a few notes"
+              : session.echoSpeaking
+                ? "Echo is speaking…"
+                : "Listening — just talk naturally")}
           {session.phase === "scoring" && "Scoring your conversation against the band descriptors…"}
         </p>
       </div>

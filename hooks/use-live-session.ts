@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import type { MascotState } from "@/components/mascot/echo-mascot";
 import type { ScoringResult } from "@/lib/ai/scoring-schema";
 import { GeminiLiveEngine } from "@/lib/ai/realtime/gemini-live";
-import type { ConversationTurn } from "@/lib/conversation/types";
+import type { ConversationTurn, LiveExaminerPhase } from "@/lib/conversation/types";
 import type { SpeakingMode } from "@/lib/ielts/examiner-flow";
 
 export type LivePhase =
@@ -44,6 +44,7 @@ export function useLiveSession(mode: SpeakingMode = "full_mock") {
   const [scoring, setScoring] = useState<ScoringResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [echoSpeaking, setEchoSpeaking] = useState(false);
+  const [examinerPhase, setExaminerPhase] = useState<LiveExaminerPhase | null>(null);
 
   const engineRef = useRef<GeminiLiveEngine | null>(null);
   const historyRef = useRef<FinalTurn[]>([]);
@@ -64,6 +65,7 @@ export function useLiveSession(mode: SpeakingMode = "full_mock") {
     setScoring(null);
     setTurns([]);
     setEchoSpeaking(false);
+    setExaminerPhase(null);
     historyRef.current = [];
     setPhase("connecting");
 
@@ -83,6 +85,7 @@ export function useLiveSession(mode: SpeakingMode = "full_mock") {
             if (!turn.partial) historyRef.current.push({ role: "candidate", text: turn.text });
           },
           onSpeakingChange: setEchoSpeaking,
+          onPhase: setExaminerPhase,
           onError: (err) => {
             setError(err.message);
             setPhase("error");
@@ -101,6 +104,7 @@ export function useLiveSession(mode: SpeakingMode = "full_mock") {
     await engineRef.current?.stop().catch(() => {});
     engineRef.current = null;
     setEchoSpeaking(false);
+    setExaminerPhase(null);
     setPhase("scoring");
 
     const transcript = historyRef.current;
@@ -134,6 +138,7 @@ export function useLiveSession(mode: SpeakingMode = "full_mock") {
     await engineRef.current?.stop().catch(() => {});
     engineRef.current = null;
     setEchoSpeaking(false);
+    setExaminerPhase(null);
     setPhase("idle");
     setTurns([]);
     historyRef.current = [];
@@ -150,6 +155,7 @@ export function useLiveSession(mode: SpeakingMode = "full_mock") {
     scoring,
     error,
     echoSpeaking,
+    examinerPhase,
     mascotState,
     start,
     finish,
