@@ -1,5 +1,14 @@
-import { GoogleGenAI, Modality, type LiveServerMessage, type Session } from "@google/genai";
+import {
+  Behavior,
+  GoogleGenAI,
+  Modality,
+  type FunctionCall,
+  type FunctionDeclaration,
+  type LiveServerMessage,
+  type Session,
+} from "@google/genai";
 
+import { LiveDirector } from "@/lib/ai/realtime/live-director";
 import { buildLiveInstructions } from "@/lib/ai/realtime/live-instructions";
 import type {
   ConversationCallbacks,
@@ -9,6 +18,34 @@ import type {
 
 const INPUT_SAMPLE_RATE = 16000; // Live API expects 16 kHz PCM input
 const OUTPUT_SAMPLE_RATE = 24000; // Live API returns 24 kHz PCM audio
+
+/**
+ * Tools the examiner calls to signal phase transitions. They take no real work —
+ * they're hooks that let the director (timers) react. NON_BLOCKING so the model
+ * keeps talking without waiting on a response.
+ */
+const EXAMINER_TOOLS: FunctionDeclaration[] = [
+  {
+    name: "begin_part",
+    description:
+      "Call this the moment you start a new part of the test, before asking its first question.",
+    behavior: Behavior.NON_BLOCKING,
+    parametersJsonSchema: {
+      type: "object",
+      properties: {
+        part: { type: "integer", description: "Which part is starting: 1, 2, or 3." },
+      },
+      required: ["part"],
+    },
+  },
+  {
+    name: "start_long_turn_preparation",
+    description:
+      "Call this immediately after you finish reading the Part 2 cue card aloud, so the candidate's one-minute preparation can be timed. Then stay silent until told to continue.",
+    behavior: Behavior.NON_BLOCKING,
+    parametersJsonSchema: { type: "object", properties: {} },
+  },
+];
 
 /** The capture worklet forwards mono Float32 frames to the main thread. */
 const CAPTURE_WORKLET = `
@@ -54,6 +91,7 @@ export class GeminiLiveEngine implements ConversationEngine {
 
   private session: Session | null = null;
   private callbacks: ConversationCallbacks = {};
+  private director: LiveDirector | null = null;
 
   private micStream: MediaStream | null = null;
   private inputCtx: AudioContext | null = null;
@@ -70,6 +108,15 @@ export class GeminiLiveEngine implements ConversationEngine {
 
   async start(config: ConversationSessionConfig, callbacks: ConversationCallbacks): Promise<void> {
     this.callbacks = callbacks;
+
+    // The agentic director owns the exam clock: it turns the model's phase-tool
+    // calls + transcription activity into proactive stage directions (interrupt,
+    // "start speaking", part time-caps), sent back as private client content.
+    this.director = new LiveDirector(config.speakingMode, {
+      instruct: (directive) =>
+        this.session?.sendClientContent({ turns: directive, turnComplete: true }),
+      onPhase: (phase) => this.callbacks.onPhase?.(phase),
+    });
 
     // 1. Exchange the server key for a short-lived ephemeral token.
     const res = await fetch("/api/realtime/token", { method: "POST" });
@@ -88,6 +135,7 @@ export class GeminiLiveEngine implements ConversationEngine {
         systemInstruction: buildLiveInstructions(config.speakingMode),
         inputAudioTranscription: {},
         outputAudioTranscription: {},
+        tools: [{ functionDeclarations: EXAMINER_TOOLS }],
       },
       callbacks: {
         onmessage: (message) => this.handleMessage(message),
@@ -116,6 +164,8 @@ export class GeminiLiveEngine implements ConversationEngine {
   }
 
   async stop(): Promise<void> {
+    this.director?.stop();
+    this.director = null;
     if (this.speakingTimer) {
       clearTimeout(this.speakingTimer);
       this.speakingTimer = null;
@@ -161,6 +211,10 @@ export class GeminiLiveEngine implements ConversationEngine {
   }
 
   private handleMessage(message: LiveServerMessage): void {
+    if (message.toolCall?.functionCalls?.length) {
+      this.handleToolCalls(message.toolCall.functionCalls);
+    }
+
     const content = message.serverContent;
     if (!content) return;
 
@@ -168,6 +222,7 @@ export class GeminiLiveEngine implements ConversationEngine {
 
     if (content.inputTranscription?.text) {
       this.candidateText += content.inputTranscription.text;
+      this.director?.noteCandidateActivity();
       this.callbacks.onCandidateText?.({
         role: "candidate",
         text: this.candidateText,
@@ -176,6 +231,7 @@ export class GeminiLiveEngine implements ConversationEngine {
     }
     if (content.outputTranscription?.text) {
       this.examinerText += content.outputTranscription.text;
+      this.director?.noteExaminerActivity();
       this.callbacks.onExaminerText?.({
         role: "examiner",
         text: this.examinerText,
@@ -188,6 +244,7 @@ export class GeminiLiveEngine implements ConversationEngine {
     }
 
     if (content.turnComplete) {
+      this.director?.noteTurnComplete();
       if (this.candidateText) {
         this.callbacks.onCandidateText?.({ role: "candidate", text: this.candidateText });
       }
@@ -197,6 +254,26 @@ export class GeminiLiveEngine implements ConversationEngine {
       this.candidateText = "";
       this.examinerText = "";
     }
+  }
+
+  /** Routes the examiner's phase-tool calls to the director and acknowledges them. */
+  private handleToolCalls(calls: FunctionCall[]): void {
+    for (const call of calls) {
+      if (call.name === "begin_part") {
+        const part = Number((call.args as { part?: unknown })?.part);
+        this.director?.beginPart(part);
+      } else if (call.name === "start_long_turn_preparation") {
+        this.director?.startLongTurnPreparation();
+      }
+    }
+    // Acknowledge so the (non-blocking) calls are resolved cleanly.
+    this.session?.sendToolResponse({
+      functionResponses: calls.map((call) => ({
+        id: call.id,
+        name: call.name,
+        response: { ok: true },
+      })),
+    });
   }
 
   /** Schedules a 24 kHz PCM chunk to play immediately after the previous one. */
