@@ -102,19 +102,23 @@ export function SpeakingSession() {
 
   return (
     <div className="flex w-full max-w-2xl flex-col items-center gap-6">
-      <EchoMascot state={session.mascotState} size="lg" />
+      <div className="bg-background/85 sticky top-16 z-10 flex w-full flex-col items-center gap-3 rounded-[var(--radius)] py-4 backdrop-blur">
+        <EchoMascot state={session.mascotState} size="lg" />
 
-      {session.part && (
-        <Badge tone="primary">
-          {session.isFullMock ? `Full mock · ${partLabel(session.part)}` : partLabel(session.part)}
-        </Badge>
-      )}
+        {session.part && (
+          <Badge tone="primary">
+            {session.isFullMock
+              ? `Full mock · ${partLabel(session.part)}`
+              : partLabel(session.part)}
+          </Badge>
+        )}
 
-      {STATUS[session.phase] && (
-        <p aria-live="polite" className="text-muted-foreground text-sm font-medium">
-          {STATUS[session.phase]}
-        </p>
-      )}
+        {STATUS[session.phase] && (
+          <p aria-live="polite" className="text-muted-foreground text-sm font-medium">
+            {STATUS[session.phase]}
+          </p>
+        )}
+      </div>
 
       {showCueCard && (
         <CueCard
