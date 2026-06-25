@@ -32,6 +32,15 @@ export interface FlowContext {
 export const PART2_PREP_SECONDS = 60;
 export const PART2_TALK_SECONDS = 120;
 
+/**
+ * Soft time budgets the live director (Mode B) enforces so a session feels like
+ * a real, time-boxed exam. Part 1/3 are capped; a single non-long-turn answer
+ * gets a gentle interrupt once it runs past the answer limit.
+ */
+export const PART1_BUDGET_SECONDS = 270; // ~4.5 min
+export const PART3_BUDGET_SECONDS = 270; // ~4.5 min
+export const ANSWER_SOFT_LIMIT_SECONDS = 55;
+
 const FULL_MOCK_ORDER: ExaminerState[] = [
   "intro",
   "part1",

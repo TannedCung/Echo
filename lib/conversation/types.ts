@@ -25,12 +25,23 @@ export interface ConversationSessionConfig {
   speakingMode: SpeakingMode;
 }
 
+/** What the timed director is currently doing, for a live status pill + countdown. */
+export interface LiveExaminerPhase {
+  part: 1 | 2 | 3;
+  stage: "interview" | "prep" | "long_turn" | "discussion";
+  label: string;
+  /** Seconds remaining, when the stage is on a clock (prep / long turn). */
+  countdown?: number;
+}
+
 export interface ConversationCallbacks {
   onStateChange?(state: ExaminerState): void;
   onExaminerText?(turn: ConversationTurn): void;
   onCandidateText?(turn: ConversationTurn): void;
   /** Fires when the examiner starts (true) or stops (false) speaking aloud. */
   onSpeakingChange?(speaking: boolean): void;
+  /** Fires when the director advances the timed exam phase (live mode). */
+  onPhase?(phase: LiveExaminerPhase | null): void;
   onError?(error: Error): void;
 }
 
