@@ -1,20 +1,17 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
-import { LiveSpeakingSession } from "@/components/practice/live-speaking-session";
-import { SpeakingSession } from "@/components/practice/speaking-session";
+import { SpeakingSurface } from "@/components/practice/speaking-surface";
 import { Button } from "@/components/ui/button";
-import { env } from "@/lib/env";
 
 export const metadata = { title: "Speaking practice — Echo" };
 
 export default function SpeakingPracticePage() {
-  // Mode B (Gemini Live S2S) is gated behind a flag; default is the chained pipeline.
-  const live = env.NEXT_PUBLIC_CONVERSATION_MODE === "live";
-
+  // The conversation engine (Mode A chained vs Mode B Gemini Live S2S) is a user
+  // preference set in Settings; SpeakingSurface resolves it on the client.
   return (
     <div className="flex flex-col items-center gap-10">
-      {live ? <LiveSpeakingSession /> : <SpeakingSession />}
+      <SpeakingSurface />
 
       <Button asChild variant="ghost" size="sm">
         <Link href="/dashboard">
