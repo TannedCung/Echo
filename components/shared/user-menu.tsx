@@ -5,6 +5,7 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useEffect, useId, useRef, useState } from "react";
 
+import { PRIMARY_NAV } from "@/components/shared/nav-links";
 import { cn } from "@/lib/utils";
 
 interface UserMenuProps {
@@ -74,6 +75,22 @@ export function UserMenu({ name, isGuest }: UserMenuProps) {
           </div>
 
           <div className="bg-border my-1 h-px" />
+
+          {/* Primary navigation — only on small screens, where the top nav is hidden. */}
+          <div className="sm:hidden">
+            {PRIMARY_NAV.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                role="menuitem"
+                onClick={() => setOpen(false)}
+                className={menuItemClass}
+              >
+                <link.icon className="size-4" aria-hidden /> {link.label}
+              </Link>
+            ))}
+            <div className="bg-border my-1 h-px" />
+          </div>
 
           <Link
             href="/settings"

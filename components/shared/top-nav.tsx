@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { EchoLogo } from "@/components/brand/echo-logo";
+import { PRIMARY_NAV } from "@/components/shared/nav-links";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { UserMenu } from "@/components/shared/user-menu";
 
@@ -8,12 +9,6 @@ interface TopNavProps {
   name?: string | null;
   isGuest?: boolean;
 }
-
-const links = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/practice/speaking", label: "Practice" },
-  { href: "/progress", label: "Progress" },
-];
 
 export function TopNav({ name, isGuest }: TopNavProps) {
   return (
@@ -24,7 +19,7 @@ export function TopNav({ name, isGuest }: TopNavProps) {
         </Link>
 
         <nav aria-label="Primary" className="hidden items-center gap-1 sm:flex">
-          {links.map((link) => (
+          {PRIMARY_NAV.map((link) => (
             <Link
               key={link.href}
               href={link.href}
