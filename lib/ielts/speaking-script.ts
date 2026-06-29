@@ -1,5 +1,5 @@
+import { pickExam, type QuestionItem, type QuestionPart } from "./exam-library";
 import { PART2_PREP_SECONDS, PART2_TALK_SECONDS, type SpeakingMode } from "./examiner-flow";
-import { questionsForPart, type QuestionItem, type QuestionPart } from "./question-bank";
 
 /**
  * Turns the question bank into an ordered sequence of examiner "moves" for a
@@ -29,14 +29,6 @@ export function partLabel(part: QuestionPart): string {
   return part.replace("part", "Part ");
 }
 
-/** How many Part 1 / Part 3 topics each mode draws from the bank. */
-const TOPIC_BUDGET = {
-  part1: 2,
-  part3: 1,
-  fullMockPart1: 2,
-  fullMockPart3: 1,
-} as const;
-
 function questionMoves(items: QuestionItem[]): ExaminerMove[] {
   return items.flatMap((item): ExaminerMove[] => [
     { kind: "question", part: item.part, topic: item.topic, text: item.prompt },
@@ -58,20 +50,26 @@ function cueCardMove(item: QuestionItem): ExaminerMove {
   };
 }
 
-/** The full ordered list of examiner moves for a mode (excludes the closing). */
-export function speakingScript(mode: SpeakingMode): ExaminerMove[] {
+/**
+ * The full ordered list of examiner moves for a mode (excludes the closing).
+ * `seed` (a per-session id) selects which exam form from the library is used —
+ * stable within a session, varied across sessions. Omitting it yields the
+ * default curated form.
+ */
+export function speakingScript(mode: SpeakingMode, seed?: string): ExaminerMove[] {
+  const exam = pickExam(seed);
   switch (mode) {
     case "part1":
-      return questionMoves(questionsForPart("part1").slice(0, TOPIC_BUDGET.part1));
+      return questionMoves(exam.part1);
     case "part2":
-      return [cueCardMove(questionsForPart("part2")[0])];
+      return [cueCardMove(exam.part2)];
     case "part3":
-      return questionMoves(questionsForPart("part3").slice(0, TOPIC_BUDGET.part3));
+      return questionMoves([exam.part3]);
     case "full_mock":
       return [
-        ...questionMoves(questionsForPart("part1").slice(0, TOPIC_BUDGET.fullMockPart1)),
-        cueCardMove(questionsForPart("part2")[0]),
-        ...questionMoves(questionsForPart("part3").slice(0, TOPIC_BUDGET.fullMockPart3)),
+        ...questionMoves(exam.part1),
+        cueCardMove(exam.part2),
+        ...questionMoves([exam.part3]),
       ];
   }
 }
@@ -96,8 +94,8 @@ function movePart(move: ExaminerMove): QuestionPart | null {
  * Once the index runs past the script, returns the closing move with
  * `complete: true` so the caller knows the part/mock is over.
  */
-export function planTurn(mode: SpeakingMode, turnIndex: number): PlannedTurn {
-  const script = speakingScript(mode);
+export function planTurn(mode: SpeakingMode, turnIndex: number, seed?: string): PlannedTurn {
+  const script = speakingScript(mode, seed);
 
   if (turnIndex >= script.length) {
     return { move: { kind: "closing" }, complete: true, isFirst: false, partChanged: false };

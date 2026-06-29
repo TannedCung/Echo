@@ -70,9 +70,13 @@ function moveLine(move: ExaminerMove): string {
   return "";
 }
 
-/** Builds the full self-driving examiner instruction for a session mode. */
-export function buildLiveInstructions(mode: SpeakingMode): string {
-  const moves = speakingScript(mode);
+/**
+ * Builds the full self-driving examiner instruction for a session mode. `seed`
+ * (the session id) picks which exam form from the library this session runs, so
+ * live sessions vary the same way the chained engine does.
+ */
+export function buildLiveInstructions(mode: SpeakingMode, seed?: string): string {
+  const moves = speakingScript(mode, seed);
 
   const sections: string[] = [];
   let currentPart: QuestionPart | null = null;

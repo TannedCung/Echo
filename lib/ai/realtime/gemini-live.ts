@@ -132,7 +132,7 @@ export class GeminiLiveEngine implements ConversationEngine {
       model,
       config: {
         responseModalities: [Modality.AUDIO],
-        systemInstruction: buildLiveInstructions(config.speakingMode),
+        systemInstruction: buildLiveInstructions(config.speakingMode, config.sessionId),
         inputAudioTranscription: {},
         outputAudioTranscription: {},
         tools: [{ functionDeclarations: EXAMINER_TOOLS }],

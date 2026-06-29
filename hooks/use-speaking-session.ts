@@ -77,6 +77,7 @@ export function useSpeakingSession(mode: SpeakingMode = "part1") {
   const [error, setError] = useState<string | null>(null);
 
   const turnIndexRef = useRef(0); // candidate answers given so far
+  const examSeedRef = useRef(""); // pins one exam form from the library per session
   const historyRef = useRef<HistoryEntry[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const cueCardRef = useRef<CueCard | null>(null);
@@ -149,7 +150,12 @@ export function useSpeakingSession(mode: SpeakingMode = "part1") {
     const res = await fetch("/api/speaking/turn", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mode, turnIndex: turnIndexRef.current, history: historyRef.current }),
+      body: JSON.stringify({
+        mode,
+        turnIndex: turnIndexRef.current,
+        examSeed: examSeedRef.current,
+        history: historyRef.current,
+      }),
     });
     if (!res.ok || !res.body) {
       throw new Error("The examiner is unavailable right now.");
@@ -315,6 +321,7 @@ export function useSpeakingSession(mode: SpeakingMode = "part1") {
     setTurns([]);
     historyRef.current = [];
     turnIndexRef.current = 0;
+    examSeedRef.current = crypto.randomUUID();
     try {
       advanceAfter(await runExaminerTurn());
     } catch (err) {

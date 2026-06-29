@@ -12,6 +12,8 @@ const turnSchema = z.object({
   mode: z.enum(["part1", "part2", "part3", "full_mock"]),
   /** How many candidate answers have been given so far (0 = opening turn). */
   turnIndex: z.number().int().min(0),
+  /** Per-session id that pins which exam form from the library is used. */
+  examSeed: z.string().optional(),
   history: z
     .array(z.object({ role: z.enum(["examiner", "candidate"]), text: z.string() }))
     .default([]),
@@ -81,8 +83,8 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return Response.json({ error: "Invalid request body" }, { status: 400 });
   }
-  const { mode, turnIndex, history } = parsed.data;
-  const { move, complete, isFirst, partChanged } = planTurn(mode, turnIndex);
+  const { mode, turnIndex, examSeed, history } = parsed.data;
+  const { move, complete, isFirst, partChanged } = planTurn(mode, turnIndex, examSeed);
   const note = directorNote(move, isFirst, partChanged);
 
   const messages: ModelMessage[] = [
