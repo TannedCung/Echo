@@ -15,8 +15,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-full flex-col">
+      <a
+        href="#main-content"
+        className="bg-primary text-primary-foreground focus-visible:ring-ring sr-only z-50 rounded-full px-4 py-2 text-sm font-semibold focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus-visible:ring-2 focus-visible:outline-none"
+      >
+        Skip to content
+      </a>
       <TopNav name={session.user.name} isGuest={session.user.isGuest} />
-      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-6 py-10">{children}</div>
+      <main id="main-content" className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-6 py-10">
+        {children}
+      </main>
     </div>
   );
 }

@@ -23,7 +23,7 @@ export function TopNav({ name, isGuest }: TopNavProps) {
           <EchoLogo size={26} />
         </Link>
 
-        <nav className="hidden items-center gap-1 sm:flex">
+        <nav aria-label="Primary" className="hidden items-center gap-1 sm:flex">
           {links.map((link) => (
             <Link
               key={link.href}
