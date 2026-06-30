@@ -38,6 +38,9 @@ export const env = createEnv({
   },
   client: {
     NEXT_PUBLIC_CONVERSATION_MODE: z.enum(["chained", "live"]).default("chained"),
+    // Examiner presence (SpeakerOutput seam). `avatar` is post-MVP; defaults to
+    // the mascot.
+    NEXT_PUBLIC_SPEAKER: z.enum(["mascot", "avatar"]).default("mascot"),
   },
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
@@ -59,6 +62,7 @@ export const env = createEnv({
     ECHO_LIVE_MODEL: process.env.ECHO_LIVE_MODEL,
     BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN,
     NEXT_PUBLIC_CONVERSATION_MODE: process.env.NEXT_PUBLIC_CONVERSATION_MODE,
+    NEXT_PUBLIC_SPEAKER: process.env.NEXT_PUBLIC_SPEAKER,
   },
   emptyStringAsUndefined: true,
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,

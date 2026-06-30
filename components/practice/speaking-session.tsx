@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { EchoMascot } from "@/components/mascot/echo-mascot";
 import { CueCard } from "@/components/practice/cue-card";
+import { SpeakerOutput } from "@/components/speaker/speaker-output";
 import { LiveTranscript } from "@/components/practice/live-transcript";
 import { ScoreReport } from "@/components/reports/score-report";
 import { Badge } from "@/components/ui/badge";
@@ -103,7 +104,7 @@ export function SpeakingSession() {
   return (
     <div className="flex w-full max-w-2xl flex-col items-center gap-6">
       <div className="bg-background/85 sticky top-16 z-10 flex w-full flex-col items-center gap-3 rounded-[var(--radius)] py-4 backdrop-blur">
-        <EchoMascot state={session.mascotState} size="lg" />
+        <SpeakerOutput state={session.mascotState} size="lg" />
 
         {session.part && (
           <Badge tone="primary">

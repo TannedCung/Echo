@@ -27,6 +27,14 @@ The UI depends only on `ConversationEngine`, never on a mode:
 
 Selected by `NEXT_PUBLIC_CONVERSATION_MODE` (`chained` | `live`).
 
+## SpeakerOutput seam (`components/speaker/`)
+
+The examiner's speaking presence is swappable too. `SpeakerOutput` renders the
+mascot today (`MascotSpeaker`); `NEXT_PUBLIC_SPEAKER=avatar` selects a lip-synced
+avatar (`AvatarSpeaker`, post-MVP — currently falls back to the mascot). Both
+consume the same examiner `state`, so the speaking UI is presence-agnostic. Wire
+a provider (Simli / HeyGen) inside `AvatarSpeaker`, never at the call sites.
+
 ## Hard rules
 
 - **No secrets on the client.** STT/realtime use short-lived ephemeral tokens
