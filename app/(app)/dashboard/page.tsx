@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { auth } from "@/auth";
 import { EchoMascot } from "@/components/mascot/echo-mascot";
+import { PRACTICE_SKILLS } from "@/components/practice/practice-skills";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Stat } from "@/components/ui/stat";
@@ -86,6 +87,34 @@ export default async function DashboardPage() {
         </div>
         <EchoMascot state="idle" size="lg" />
       </Card>
+
+      <div className="flex flex-col gap-3">
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="text-lg font-bold">Practise the full test</h2>
+          <Link href="/practice" className="text-primary text-sm font-semibold hover:underline">
+            See all
+          </Link>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {PRACTICE_SKILLS.map((skill) => {
+            const Icon = skill.icon;
+            return (
+              <Link key={skill.id} href={skill.href} className="group">
+                <Card
+                  tint={skill.tint}
+                  className="flex h-full flex-col gap-2 transition-shadow group-hover:shadow-md"
+                >
+                  <span className="bg-background/70 flex size-10 items-center justify-center rounded-full">
+                    <Icon className="size-5" aria-hidden />
+                  </span>
+                  <CardTitle className="text-base">{skill.label}</CardTitle>
+                  <CardDescription className="text-xs">{skill.blurb}</CardDescription>
+                </Card>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat

@@ -74,6 +74,15 @@ export const isGoogleAuthConfigured = !!env.AUTH_GOOGLE_ID && !!env.AUTH_GOOGLE_
 /** True when the Gemini Live (Mode B) realtime engine can be used. */
 export const isLiveConfigured = !!env.GOOGLE_GENERATIVE_AI_API_KEY;
 
+/**
+ * True when the configured TTS provider has its key set, so audio can actually
+ * be synthesised (e.g. for the Listening paper). Lets audio-dependent features
+ * degrade to a text fallback instead of erroring.
+ */
+export const isTtsConfigured =
+  (env.ECHO_TTS_PROVIDER === "openai" && !!env.OPENAI_API_KEY) ||
+  (env.ECHO_TTS_PROVIDER === "elevenlabs" && !!env.ELEVENLABS_API_KEY);
+
 /** Assert an optional server env var is present at the point of use. */
 export function requireEnv<K extends keyof typeof env>(key: K): NonNullable<(typeof env)[K]> {
   const value = env[key];
