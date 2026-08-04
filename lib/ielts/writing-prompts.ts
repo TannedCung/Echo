@@ -64,6 +64,46 @@ export const WRITING_PROMPTS: WritingPrompt[] = [
     prompt:
       "Children today spend an increasing amount of their free time using digital devices such as tablets and smartphones. Some believe this is a positive development, while others are concerned about its effects.\n\nDiscuss both views and give your own opinion. Give reasons for your answer and include any relevant examples from your own knowledge or experience. Write at least 250 words.",
   },
+  {
+    id: "t1-global-energy-consumption",
+    task: "task1",
+    title: "Energy consumption by source",
+    suggestedMinutes: 20,
+    prompt:
+      "The chart below shows global energy consumption by three major sources (Fossil Fuels, Nuclear, and Renewable Energy) between 2000 and 2020.\n\n• Fossil fuels: 80% (2000) → 65% (2020)\n• Renewable energy: 10% (2000) → 25% (2020)\n• Nuclear power: 10% (2000) → 10% (2020)\n\nSummarise the information by selecting and reporting the main features, and make comparisons where relevant. Write at least 150 words.",
+  },
+  {
+    id: "t1-water-usage-by-sector",
+    task: "task1",
+    title: "Water usage by sector",
+    suggestedMinutes: 20,
+    prompt:
+      "The data below presents the breakdown of global freshwater usage across three main sectors in 2020.\n\n• Agriculture: 70%\n• Industry & Manufacturing: 20%\n• Domestic & Household: 10%\n\nSummarise the information by selecting and reporting the main features, and make comparisons where relevant. Write at least 150 words.",
+  },
+  {
+    id: "t1-university-graduates-employment",
+    task: "task1",
+    title: "Graduate employment destinations",
+    suggestedMinutes: 20,
+    prompt:
+      "The table below shows the destination of university graduates in one country within six months of graduation in 2010 and 2022.\n\n• Full-time employment: 62% (2010) → 71% (2022)\n• Further study: 18% (2010) → 15% (2022)\n• Part-time / Freelance: 12% (2010) → 9% (2022)\n• Unemployed: 8% (2010) → 5% (2022)\n\nSummarise the information by selecting and reporting the main features, and make comparisons where relevant. Write at least 150 words.",
+  },
+  {
+    id: "t2-artificial-intelligence-workplace",
+    task: "task2",
+    title: "AI and future workforce",
+    suggestedMinutes: 40,
+    prompt:
+      "Artificial intelligence and automation are increasingly performing tasks previously handled by human workers. Some argue this will create widespread unemployment, while others believe it will generate new and better employment opportunities.\n\nDiscuss both views and give your own opinion. Give reasons for your answer and include any relevant examples from your own experience. Write at least 250 words.",
+  },
+  {
+    id: "t2-globalisation-cultural-identity",
+    task: "task2",
+    title: "Globalisation & local culture",
+    suggestedMinutes: 40,
+    prompt:
+      "Globalisation has led to similar products, media, and lifestyles being adopted in countries across the world. Some believe this leads to a loss of traditional cultural identities, while others welcome the global integration.\n\nTo what extent do you agree or disagree? Give reasons for your answer and include any relevant examples from your own knowledge or experience. Write at least 250 words.",
+  },
 ];
 
 export function getWritingPrompt(id: string): WritingPrompt | undefined {

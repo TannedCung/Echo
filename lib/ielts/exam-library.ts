@@ -330,6 +330,203 @@ export const EXAM_LIBRARY: ExamSet[] = [
       ],
     },
   },
+  {
+    id: "hobbies-and-creativity",
+    title: "Hobbies & creativity",
+    part1: [
+      {
+        id: "p1-art-craft",
+        part: "part1",
+        topic: "Art and craft",
+        prompt: "Do you enjoy making things by hand?",
+        followUps: [
+          "Did you do many arts and crafts when you were a child?",
+          "Would you like to learn a new creative hobby in the future?",
+        ],
+      },
+      {
+        id: "p1-sports-exercise",
+        part: "part1",
+        topic: "Sports and exercise",
+        prompt: "What sports or physical activities do you enjoy?",
+        followUps: [
+          "Do you prefer watching sports or playing them?",
+          "Is sport popular among people in your country?",
+        ],
+      },
+    ],
+    part2: {
+      id: "p2-creative-project",
+      part: "part2",
+      topic: "A creative project",
+      prompt:
+        "Describe a creative project or activity you worked on. You should say what the project was, how you worked on it, and what the outcome was, and explain how you felt about it.",
+      followUps: [
+        "what the project was",
+        "how you worked on it",
+        "what the outcome was",
+        "how you felt about it",
+      ],
+    },
+    part3: {
+      id: "p3-creativity-work-education",
+      part: "part3",
+      topic: "Creativity in work and education",
+      prompt: "Why is creativity important in modern workplaces?",
+      followUps: [
+        "Should schools spend more time teaching creative subjects?",
+        "Can anyone become more creative, or is it an inborn talent?",
+      ],
+    },
+  },
+  {
+    id: "transport-and-cities",
+    title: "Transport & city life",
+    part1: [
+      {
+        id: "p1-public-transport",
+        part: "part1",
+        topic: "Public transport",
+        prompt: "How often do you use public transport in your city?",
+        followUps: [
+          "What is your favourite mode of transport, and why?",
+          "Do you think public transport in your town could be improved?",
+        ],
+      },
+      {
+        id: "p1-neighbourhood",
+        part: "part1",
+        topic: "Neighbourhoods",
+        prompt: "Can you tell me about the area where you live?",
+        followUps: [
+          "What facilities are available near your home?",
+          "How long have you lived in this neighbourhood?",
+        ],
+      },
+    ],
+    part2: {
+      id: "p2-ideal-city",
+      part: "part2",
+      topic: "A city you'd like to live in",
+      prompt:
+        "Describe a city you would like to live in for a short period of time. You should say where it is, what it is like, and what you would do there, and explain why you chose this city.",
+      followUps: [
+        "where it is",
+        "what it is like",
+        "what you would do there",
+        "why you chose this city",
+      ],
+    },
+    part3: {
+      id: "p3-urban-living",
+      part: "part3",
+      topic: "Urban development and community",
+      prompt: "What are the main advantages of living in a large metropolitan city?",
+      followUps: [
+        "What problems can overpopulation cause in urban areas?",
+        "Do you think more people will move to rural areas in the future?",
+      ],
+    },
+  },
+  {
+    id: "work-life-balance",
+    title: "Work-life balance & wellbeing",
+    part1: [
+      {
+        id: "p1-sleep-relaxation",
+        part: "part1",
+        topic: "Sleep and relaxation",
+        prompt: "How many hours of sleep do you usually get each night?",
+        followUps: [
+          "What do you do when you feel stressed or overworked?",
+          "Do you find it easy to switch off from work or study?",
+        ],
+      },
+      {
+        id: "p1-health-fitness",
+        part: "part1",
+        topic: "Health and fitness",
+        prompt: "What do you do to keep healthy and active?",
+        followUps: [
+          "Has your attitude toward health changed since you were younger?",
+          "Is eating healthy food expensive in your country?",
+        ],
+      },
+    ],
+    part2: {
+      id: "p2-busy-schedule",
+      part: "part2",
+      topic: "A busy schedule",
+      prompt:
+        "Describe a time when you had to manage a very busy schedule or workload. You should say when it was, what you had to do, and how you managed your time, and explain how you felt after completing everything.",
+      followUps: [
+        "when it was",
+        "what you had to do",
+        "how you managed your time",
+        "how you felt afterwards",
+      ],
+    },
+    part3: {
+      id: "p3-modern-pace-of-life",
+      part: "part3",
+      topic: "Pace of modern life",
+      prompt: "Do you think people today lead more stressful lives than in the past?",
+      followUps: [
+        "How can companies help their employees maintain a healthy work-life balance?",
+        "Is flexible working hours a good policy for all industries?",
+      ],
+    },
+  },
+  {
+    id: "nature-and-environment",
+    title: "Nature & conservation",
+    part1: [
+      {
+        id: "p1-parks-gardens",
+        part: "part1",
+        topic: "Parks and gardens",
+        prompt: "Are there many parks or green spaces near where you live?",
+        followUps: [
+          "How often do you visit parks or outdoor gardens?",
+          "Why is spending time outdoors beneficial for people?",
+        ],
+      },
+      {
+        id: "p1-animals-wildlife",
+        part: "part1",
+        topic: "Animals and wildlife",
+        prompt: "Do you have any pets, or would you like to have one?",
+        followUps: [
+          "What wild animals are common in your country?",
+          "Did you learn about animals at school?",
+        ],
+      },
+    ],
+    part2: {
+      id: "p2-environmental-rule",
+      part: "part2",
+      topic: "An environmental rule or initiative",
+      prompt:
+        "Describe an environmental rule, law, or green initiative that you agree with. You should say what the initiative is, how it works, and who it affects, and explain why you think it is beneficial.",
+      followUps: [
+        "what the initiative is",
+        "how it works",
+        "who it affects",
+        "why it is beneficial",
+      ],
+    },
+    part3: {
+      id: "p3-global-conservation",
+      part: "part3",
+      topic: "Global environmental policies",
+      prompt:
+        "Who bears more responsibility for protecting the environment: individuals or governments?",
+      followUps: [
+        "How can international cooperation help address climate change?",
+        "Will renewable energy completely replace fossil fuels in the near future?",
+      ],
+    },
+  },
 ];
 
 /**
