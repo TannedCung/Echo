@@ -6,6 +6,7 @@ import {
   FileText,
   Filter,
   Headphones,
+  Image as ImageIcon,
   Mic,
   PenTool,
   Play,
@@ -304,10 +305,18 @@ export function ExamManager() {
                       <Badge tone="accent">Target: {test.level}</Badge>
                     </div>
 
-                    <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                    <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
                       <span>{test.questions.length} Objective Questions</span>
                       <span>•</span>
                       <span>{test.transcript.length} Audio Blocks</span>
+                      {test.imageUrl && (
+                        <>
+                          <span>•</span>
+                          <span className="text-accent flex items-center gap-1 font-semibold">
+                            <ImageIcon className="size-3" /> Map/Diagram
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
 
@@ -413,9 +422,16 @@ export function ExamManager() {
                           ID: {prompt.id}
                         </span>
                       </div>
-                      <Badge tone="warning" className="uppercase">
-                        {prompt.task} ({prompt.suggestedMinutes}m)
-                      </Badge>
+                      <div className="flex items-center gap-1.5">
+                        <Badge tone="warning" className="uppercase">
+                          {prompt.task} ({prompt.suggestedMinutes}m)
+                        </Badge>
+                        {prompt.imageUrl && (
+                          <Badge tone="primary" className="flex items-center gap-1">
+                            <ImageIcon className="size-3" /> Chart
+                          </Badge>
+                        )}
+                      </div>
                     </div>
 
                     <p className="text-muted-foreground line-clamp-3 text-xs leading-relaxed">

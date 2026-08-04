@@ -147,6 +147,22 @@ function SpeakingDetails({ examSet }: { examSet: ExamSet }) {
       </div>
 
       {/* Part 2 */}
+      {examSet.imageUrl && (
+        <div>
+          <h3 className="text-primary mb-2 text-sm font-semibold tracking-wider uppercase">
+            Visual Cue Card / Map Asset
+          </h3>
+          <div className="bg-background border-border overflow-hidden rounded-lg border p-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={examSet.imageUrl}
+              alt={examSet.imageAlt || examSet.title}
+              className="max-h-72 w-full rounded-md object-contain"
+            />
+          </div>
+        </div>
+      )}
+
       <div>
         <h3 className="text-primary mb-3 text-sm font-semibold tracking-wider uppercase">
           Part 2 — Individual Long Turn (Cue Card)
@@ -220,6 +236,22 @@ function ListeningDetails({ test }: { test: ListeningTest }) {
         <p className="text-muted-foreground text-sm italic">{test.context}</p>
       </div>
 
+      {test.imageUrl && (
+        <div>
+          <h3 className="text-primary mb-2 text-sm font-semibold tracking-wider uppercase">
+            Visual Diagram / Map Asset
+          </h3>
+          <div className="bg-background border-border overflow-hidden rounded-lg border p-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={test.imageUrl}
+              alt={test.imageAlt || test.title}
+              className="max-h-72 w-full rounded-md object-contain"
+            />
+          </div>
+        </div>
+      )}
+
       <div>
         <h3 className="text-primary mb-2 text-sm font-semibold tracking-wider uppercase">
           Audio Transcript ({test.transcript.length} paragraphs)
@@ -271,6 +303,22 @@ function ReadingDetails({ test }: { test: ReadingTest }) {
         </Badge>
         <p className="text-muted-foreground text-sm font-medium">Academic Reading Passage</p>
       </div>
+
+      {test.imageUrl && (
+        <div>
+          <h3 className="text-primary mb-2 text-sm font-semibold tracking-wider uppercase">
+            Visual Diagram / Figure
+          </h3>
+          <div className="bg-background border-border overflow-hidden rounded-lg border p-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={test.imageUrl}
+              alt={test.imageAlt || test.title}
+              className="max-h-72 w-full rounded-md object-contain"
+            />
+          </div>
+        </div>
+      )}
 
       <div>
         <h3 className="text-primary mb-2 text-sm font-semibold tracking-wider uppercase">
