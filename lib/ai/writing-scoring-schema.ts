@@ -23,7 +23,7 @@ export const writingScoringSchema = z.object({
   coherenceCohesion: criterionResult,
   lexicalResource: criterionResult,
   grammaticalRange: criterionResult,
-  overall: bandScore,
+  overall: z.number().min(0).max(9),
   upgrades: z
     .array(z.string())
     .min(3)

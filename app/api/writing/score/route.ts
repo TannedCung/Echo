@@ -6,6 +6,7 @@ import { writingScoringSchema } from "@/lib/ai/writing-scoring-schema";
 import { isDbConfigured } from "@/lib/db/client";
 import { persistWritingSubmission } from "@/lib/db/queries/writing";
 import { countWords } from "@/lib/ielts/writing-descriptors";
+import { calibrateWritingScoringResult } from "@/lib/ielts/writing-calibration";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -58,27 +59,7 @@ export async function POST(request: Request) {
     );
     scoring = result.object;
 
-    // Calibrate Task Response for under-length responses (< 150 words T1 / < 250 words T2)
-    const minWords = task === "task1" ? 150 : 250;
-    if (wordCount < minWords) {
-      const penalty = Math.min(1.0, ((minWords - wordCount) / minWords) * 1.5);
-      scoring.taskResponse.band = Math.max(
-        4.0,
-        Math.round((scoring.taskResponse.band - penalty) * 2) / 2,
-      );
-    }
-
-    // Post-process overall band to ensure strict arithmetic half-band rounding consistency
-    const calcOverall =
-      Math.round(
-        ((scoring.taskResponse.band +
-          scoring.coherenceCohesion.band +
-          scoring.lexicalResource.band +
-          scoring.grammaticalRange.band) /
-          4) *
-          2,
-      ) / 2;
-    scoring.overall = calcOverall;
+    scoring = calibrateWritingScoringResult(result.object, response, wordCount, task);
   } catch (error) {
     return Response.json({ error: `Scoring failed: ${(error as Error).message}` }, { status: 502 });
   }

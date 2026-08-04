@@ -27,8 +27,8 @@ describe("scoringSchema", () => {
     expect(scoringSchema.parse(validResult)).toMatchObject({ overall: 6.5 });
   });
 
-  it("rejects non-half-band scores", () => {
-    const bad = { ...validResult, overall: 6.3 };
+  it("rejects non-half-band criterion scores", () => {
+    const bad = { ...validResult, fluencyCoherence: { ...validCriterion, band: 6.3 } };
     expect(scoringSchema.safeParse(bad).success).toBe(false);
   });
 
