@@ -16,6 +16,8 @@ export interface PublicReadingTest {
   title: string;
   level: string;
   passage: string[];
+  imageUrl?: string;
+  imageAlt?: string;
   questions: PublicQuestion[];
 }
 
@@ -139,6 +141,16 @@ export function ReadingSurface({ tests }: { tests: PublicReadingTest[] }) {
             <CardTitle className="text-base">{test.title}</CardTitle>
             <Badge tone="neutral">Target Level: {test.level}</Badge>
           </div>
+          {test.imageUrl && (
+            <div className="bg-background/80 border-border overflow-hidden rounded-lg border p-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={test.imageUrl}
+                alt={test.imageAlt || test.title}
+                className="max-h-72 w-full rounded-md object-contain"
+              />
+            </div>
+          )}
           {test.passage.map((p, i) => (
             <p key={i} className="text-sm leading-relaxed">
               {p}

@@ -16,6 +16,8 @@ export interface PublicListeningTest {
   title: string;
   context: string;
   level: string;
+  imageUrl?: string;
+  imageAlt?: string;
   questions: PublicQuestion[];
   /** Present only in the text fallback (when TTS is not configured). */
   transcript?: string[];
@@ -199,6 +201,17 @@ export function ListeningSurface({
           <Badge tone="neutral">Target Level: {test.level}</Badge>
         </div>
         <CardDescription>{test.context}</CardDescription>
+
+        {test.imageUrl && (
+          <div className="bg-background/80 border-border overflow-hidden rounded-lg border p-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={test.imageUrl}
+              alt={test.imageAlt || test.title}
+              className="max-h-72 w-full rounded-md object-contain"
+            />
+          </div>
+        )}
 
         {audioAvailable ? (
           <div className="flex items-center gap-3">

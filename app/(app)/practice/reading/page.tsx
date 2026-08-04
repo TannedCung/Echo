@@ -15,6 +15,8 @@ export default function ReadingPracticePage() {
     title: test.title,
     level: test.level,
     passage: test.passage,
+    imageUrl: test.imageUrl,
+    imageAlt: test.imageAlt,
     questions: test.questions.map(toPublicQuestion),
   }));
 

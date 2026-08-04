@@ -20,6 +20,8 @@ export default function ListeningPracticePage() {
     title: test.title,
     context: test.context,
     level: test.level,
+    imageUrl: test.imageUrl,
+    imageAlt: test.imageAlt,
     questions: test.questions.map(toPublicQuestion),
     transcript: isTtsConfigured ? undefined : test.transcript,
   }));
