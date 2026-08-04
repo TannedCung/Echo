@@ -196,7 +196,7 @@ export function ListeningSurface({
       <Card tint="primary" className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
           <CardTitle className="text-base">{test.title}</CardTitle>
-          <Badge tone="neutral">{test.level}</Badge>
+          <Badge tone="neutral">Target Level: {test.level}</Badge>
         </div>
         <CardDescription>{test.context}</CardDescription>
 

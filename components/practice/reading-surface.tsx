@@ -137,7 +137,7 @@ export function ReadingSurface({ tests }: { tests: PublicReadingTest[] }) {
         <Card className="flex flex-col gap-3 lg:max-h-[70vh] lg:overflow-y-auto">
           <div className="flex items-center gap-2">
             <CardTitle className="text-base">{test.title}</CardTitle>
-            <Badge tone="neutral">{test.level}</Badge>
+            <Badge tone="neutral">Target Level: {test.level}</Badge>
           </div>
           {test.passage.map((p, i) => (
             <p key={i} className="text-sm leading-relaxed">

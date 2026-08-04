@@ -215,7 +215,7 @@ function ListeningDetails({ test }: { test: ListeningTest }) {
     <div className="flex flex-col gap-6">
       <div>
         <Badge tone="accent" className="mb-2">
-          {test.level}
+          Target Level: {test.level}
         </Badge>
         <p className="text-muted-foreground text-sm italic">{test.context}</p>
       </div>
@@ -267,7 +267,7 @@ function ReadingDetails({ test }: { test: ReadingTest }) {
     <div className="flex flex-col gap-6">
       <div>
         <Badge tone="accent" className="mb-2">
-          {test.level}
+          Target Level: {test.level}
         </Badge>
         <p className="text-muted-foreground text-sm font-medium">Academic Reading Passage</p>
       </div>

@@ -301,7 +301,7 @@ export function ExamManager() {
                           {test.context}
                         </CardDescription>
                       </div>
-                      <Badge tone="accent">{test.level}</Badge>
+                      <Badge tone="accent">Target: {test.level}</Badge>
                     </div>
 
                     <div className="text-muted-foreground flex items-center gap-2 text-xs">
@@ -355,7 +355,7 @@ export function ExamManager() {
                           {test.passage[0]}
                         </CardDescription>
                       </div>
-                      <Badge tone="success">{test.level}</Badge>
+                      <Badge tone="success">Target: {test.level}</Badge>
                     </div>
 
                     <div className="text-muted-foreground flex items-center gap-2 text-xs">

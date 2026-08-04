@@ -24,7 +24,7 @@ export const READING_TESTS: ReadingTest[] = [
   {
     id: "the-quiet-return-of-the-beaver",
     title: "The quiet return of the beaver",
-    level: "Bands 6–7",
+    level: "Band 6.0–7.0",
     passage: [
       "For most of the last four centuries, the European beaver was a ghost across much of its former range. Hunted relentlessly for its fur, its meat and a secretion once prized in medicine, the animal had vanished from Britain by the sixteenth century and clung on elsewhere only in a handful of isolated pockets. By 1900, fewer than 1,200 beavers were thought to survive on the entire continent. It seemed a species quietly bowing out.",
       "The reversal that followed is one of conservation's less celebrated success stories. Beginning in the 1920s, a scattering of reintroduction schemes released small groups of beavers into protected rivers. Progress was slow and often unofficial. In Britain, the animals returned not through a grand national plan but partly by accident, when individuals escaped from private collections and established themselves along quiet waterways before anyone in authority had decided whether they should be there at all.",

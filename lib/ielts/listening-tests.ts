@@ -31,7 +31,7 @@ export const LISTENING_TESTS: ListeningTest[] = [
     title: "Community garden induction",
     context:
       "You will hear a volunteer coordinator giving a short induction talk to new members of a community garden.",
-    level: "Bands 5.5–6.5",
+    level: "Band 5.5–6.5",
     transcript: [
       "Hello everyone, and a very warm welcome to the Riverside Community Garden. My name is Dana, and I'm the volunteer coordinator, so I'll be your main point of contact for your first few weeks here.",
       "Let me start with the practical details. The garden is open from eight in the morning until dusk, seven days a week. Volunteers can come whenever suits them, but we do ask that you sign in at the shed by the main gate each time, mainly so we know who's on site in case of an emergency.",
@@ -130,7 +130,7 @@ export const LISTENING_TESTS: ListeningTest[] = [
     id: "museum-tour-briefing",
     title: "Museum tour briefing",
     context: "You will hear a guide briefing a group before a tour of a maritime museum.",
-    level: "Bands 6–7",
+    level: "Band 6.0–7.0",
     transcript: [
       "Good morning, everyone, and welcome to the National Maritime Museum. Before we begin the tour, I'd just like to run through a few points so that everything goes smoothly.",
       "The tour lasts about ninety minutes in total, and we'll be covering three of the museum's main galleries. We'll start upstairs in the Age of Sail gallery, then move down to the Trade and Empire rooms, and finish in the newest gallery, which opened only last spring and focuses on modern shipping.",
