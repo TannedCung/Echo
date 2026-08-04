@@ -58,6 +58,16 @@ export async function POST(request: Request) {
     );
     scoring = result.object;
 
+    // Calibrate Task Response for under-length responses (< 150 words T1 / < 250 words T2)
+    const minWords = task === "task1" ? 150 : 250;
+    if (wordCount < minWords) {
+      const penalty = Math.min(1.0, ((minWords - wordCount) / minWords) * 1.5);
+      scoring.taskResponse.band = Math.max(
+        4.0,
+        Math.round((scoring.taskResponse.band - penalty) * 2) / 2,
+      );
+    }
+
     // Post-process overall band to ensure strict arithmetic half-band rounding consistency
     const calcOverall =
       Math.round(
