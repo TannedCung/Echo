@@ -67,6 +67,18 @@ export async function POST(request: Request) {
       { structuredOutput: { schema: scoringSchema } },
     );
     scoring = result.object;
+
+    // Post-process overall band to ensure strict arithmetic half-band rounding consistency
+    const calcOverall =
+      Math.round(
+        ((scoring.fluencyCoherence.band +
+          scoring.lexicalResource.band +
+          scoring.grammaticalRange.band +
+          scoring.pronunciation.band) /
+          4) *
+          2,
+      ) / 2;
+    scoring.overall = calcOverall;
   } catch (error) {
     return Response.json({ error: `Scoring failed: ${(error as Error).message}` }, { status: 502 });
   }

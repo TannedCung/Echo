@@ -32,11 +32,11 @@ describe("IELTS Scoring Benchmark Dataset & Calibration", () => {
   });
 
   it("contains Speaking benchmark samples with valid transcripts and ground truth", () => {
-    expect(SPEAKING_BENCHMARK_DATASET.length).toBeGreaterThanOrEqual(2);
+    expect(SPEAKING_BENCHMARK_DATASET.length).toBeGreaterThanOrEqual(5);
 
     for (const sample of SPEAKING_BENCHMARK_DATASET) {
       expect(sample.transcript.length).toBeGreaterThan(0);
-      expect(sample.groundTruth.overallBand).toBeGreaterThanOrEqual(5.0);
+      expect(sample.groundTruth.overallBand).toBeGreaterThanOrEqual(4.0);
       expect(sample.groundTruth.examinerComment).toBeTruthy();
     }
   });
