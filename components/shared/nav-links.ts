@@ -1,4 +1,10 @@
-import { GraduationCap, LayoutDashboard, TrendingUp, type LucideIcon } from "lucide-react";
+import {
+  BookOpen,
+  GraduationCap,
+  LayoutDashboard,
+  TrendingUp,
+  type LucideIcon,
+} from "lucide-react";
 
 export interface NavLink {
   href: string;
@@ -13,5 +19,6 @@ export interface NavLink {
 export const PRIMARY_NAV: NavLink[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/practice", label: "Practice", icon: GraduationCap },
+  { href: "/exams", label: "Exams", icon: BookOpen },
   { href: "/progress", label: "Progress", icon: TrendingUp },
 ];
