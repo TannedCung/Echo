@@ -17,6 +17,9 @@ export interface ReadingTest {
   level: string;
   /** The reading passage, as ordered paragraphs. */
   passage: string[];
+  /** Optional scientific diagram, map, or schematic figure. */
+  imageUrl?: string;
+  imageAlt?: string;
   questions: ObjectiveQuestion[];
 }
 

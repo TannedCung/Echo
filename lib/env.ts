@@ -35,6 +35,14 @@ export const env = createEnv({
     ECHO_LIVE_MODEL: z.string().default("gemini-3.1-flash-live-preview"),
 
     BLOB_READ_WRITE_TOKEN: z.string().optional(),
+
+    // Cloudflare R2 / S3 Storage
+    S3_ENDPOINT: z.string().optional(),
+    S3_BUCKET: z.string().optional(),
+    S3_ACCESS_KEY_ID: z.string().optional(),
+    S3_SECRET_ACCESS_KEY: z.string().optional(),
+    S3_PUBLIC_URL: z.string().optional(),
+    S3_API_TOKEN: z.string().optional(),
   },
   client: {
     NEXT_PUBLIC_CONVERSATION_MODE: z.enum(["chained", "live"]).default("chained"),
@@ -61,6 +69,12 @@ export const env = createEnv({
     GOOGLE_GENERATIVE_AI_API_KEY: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
     ECHO_LIVE_MODEL: process.env.ECHO_LIVE_MODEL,
     BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN,
+    S3_ENDPOINT: process.env.S3_ENDPOINT,
+    S3_BUCKET: process.env.S3_BUCKET,
+    S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID,
+    S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY,
+    S3_PUBLIC_URL: process.env.S3_PUBLIC_URL,
+    S3_API_TOKEN: process.env.S3_API_TOKEN,
     NEXT_PUBLIC_CONVERSATION_MODE: process.env.NEXT_PUBLIC_CONVERSATION_MODE,
     NEXT_PUBLIC_SPEAKER: process.env.NEXT_PUBLIC_SPEAKER,
   },

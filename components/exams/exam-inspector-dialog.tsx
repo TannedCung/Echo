@@ -324,6 +324,22 @@ function WritingDetails({ prompt }: { prompt: WritingPrompt }) {
         <Badge tone="neutral">{prompt.task === "task1" ? "150+ words" : "250+ words"}</Badge>
       </div>
 
+      {prompt.imageUrl && (
+        <div>
+          <h3 className="text-primary mb-2 text-sm font-semibold tracking-wider uppercase">
+            Visual Asset / Chart
+          </h3>
+          <div className="bg-background border-border overflow-hidden rounded-lg border p-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={prompt.imageUrl}
+              alt={prompt.imageAlt || prompt.title}
+              className="max-h-72 w-full rounded-md object-contain"
+            />
+          </div>
+        </div>
+      )}
+
       <div>
         <h3 className="text-primary mb-2 text-sm font-semibold tracking-wider uppercase">
           Task Prompt

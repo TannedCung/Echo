@@ -149,8 +149,18 @@ export function WritingSurface({ prompts }: { prompts: WritingPrompt[] }) {
 
       {prompt && (
         <>
-          <Card tint="accent" className="flex flex-col gap-2">
+          <Card tint="accent" className="flex flex-col gap-3">
             <CardTitle className="text-base">Your task</CardTitle>
+            {prompt.imageUrl && (
+              <div className="bg-background/80 border-border overflow-hidden rounded-lg border p-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={prompt.imageUrl}
+                  alt={prompt.imageAlt || prompt.title}
+                  className="max-h-80 w-full rounded-md object-contain"
+                />
+              </div>
+            )}
             <p className="text-sm leading-relaxed whitespace-pre-wrap">{prompt.prompt}</p>
           </Card>
 

@@ -22,6 +22,9 @@ export interface ListeningTest {
   level: string;
   /** The spoken script, as ordered paragraphs, sent to TTS and shown in review. */
   transcript: string[];
+  /** Optional map, floor plan, or schematic diagram visual asset. */
+  imageUrl?: string;
+  imageAlt?: string;
   questions: ObjectiveQuestion[];
 }
 

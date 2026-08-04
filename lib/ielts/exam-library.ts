@@ -24,6 +24,8 @@ export interface QuestionItem {
   prompt: string;
   /** Part 2 cue-card bullet points, or Part 1/3 follow-up questions. */
   followUps: string[];
+  imageUrl?: string;
+  imageAlt?: string;
 }
 
 export interface ExamSet {
@@ -33,6 +35,8 @@ export interface ExamSet {
   part1: QuestionItem[];
   part2: QuestionItem;
   part3: QuestionItem;
+  imageUrl?: string;
+  imageAlt?: string;
 }
 
 export const EXAM_LIBRARY: ExamSet[] = [

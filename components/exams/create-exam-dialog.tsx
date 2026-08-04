@@ -44,8 +44,34 @@ export function CreateExamDialog({
   // Writing state
   const [taskType, setTaskType] = useState<"task1" | "task2">("task2");
   const [writingPromptText, setWritingPromptText] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   if (!isOpen) return null;
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/storage/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      setImageUrl(data.url);
+    } catch (err) {
+      alert((err as Error).message);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,6 +118,7 @@ export function CreateExamDialog({
         title: title || "Custom Writing Task",
         suggestedMinutes: taskType === "task1" ? 20 : 40,
         prompt: writingPromptText || "Write your essay here.",
+        imageUrl: imageUrl || undefined,
       };
       onSaveWriting(newPrompt);
     }
@@ -276,16 +303,37 @@ export function CreateExamDialog({
 
               <div>
                 <label className="text-muted-foreground mb-1 block text-xs font-semibold">
-                  Prompt Instructions
+                  Visual Chart / Diagram Asset (Cloudflare R2 S3 Upload)
                 </label>
-                <textarea
-                  className="border-border bg-background focus-visible:ring-ring w-full rounded-md border p-3 text-xs focus-visible:ring-2 focus-visible:outline-none"
-                  rows={4}
-                  placeholder="Write the full task prompt..."
-                  value={writingPromptText}
-                  onChange={(e) => setWritingPromptText(e.target.value)}
-                  required
-                />
+                <div className="flex flex-col gap-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="text-muted-foreground file:bg-primary/10 file:text-primary hover:file:bg-primary/20 text-xs file:mr-3 file:rounded-md file:border-0 file:px-3 file:py-1.5 file:text-xs file:font-semibold"
+                  />
+                  <Input
+                    placeholder="Or paste direct image URL (https://...)"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    className="text-xs"
+                  />
+                  {uploading && (
+                    <span className="text-accent animate-pulse text-xs">
+                      Uploading to Cloudflare R2 S3...
+                    </span>
+                  )}
+                  {imageUrl && (
+                    <div className="bg-background border-border flex max-h-32 justify-center overflow-hidden rounded-md border p-1">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={imageUrl}
+                        alt="Uploaded chart preview"
+                        className="max-h-28 object-contain"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}

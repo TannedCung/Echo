@@ -18,6 +18,9 @@ export interface WritingPrompt {
   prompt: string;
   /** Suggested time in minutes (20 for Task 1, 40 for Task 2). */
   suggestedMinutes: number;
+  /** Optional chart, table, map, or diagram visual asset. */
+  imageUrl?: string;
+  imageAlt?: string;
 }
 
 export const WRITING_PROMPTS: WritingPrompt[] = [
